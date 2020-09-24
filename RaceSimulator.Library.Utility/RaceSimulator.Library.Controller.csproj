@@ -4,4 +4,8 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\RaceSimulator.Library.Core\RaceSimulator.Library.Core.csproj" />
+  </ItemGroup>
+
 </Project>

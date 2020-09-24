@@ -59,12 +59,12 @@
         }
       }
     },
-    "C:\\Users\\ronal\\source\\repos\\Simulator\\RaceSimulator.Library.Utility\\RaceSimulator.Library.Utility.csproj": {
+    "C:\\Users\\ronal\\source\\repos\\Simulator\\RaceSimulator.Library.Utility\\RaceSimulator.Library.Controller.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\ronal\\source\\repos\\Simulator\\RaceSimulator.Library.Utility\\RaceSimulator.Library.Utility.csproj",
-        "projectName": "RaceSimulator.Library.Utility",
-        "projectPath": "C:\\Users\\ronal\\source\\repos\\Simulator\\RaceSimulator.Library.Utility\\RaceSimulator.Library.Utility.csproj",
+        "projectUniqueName": "C:\\Users\\ronal\\source\\repos\\Simulator\\RaceSimulator.Library.Utility\\RaceSimulator.Library.Controller.csproj",
+        "projectName": "RaceSimulator.Library.Controller",
+        "projectPath": "C:\\Users\\ronal\\source\\repos\\Simulator\\RaceSimulator.Library.Utility\\RaceSimulator.Library.Controller.csproj",
         "packagesPath": "C:\\Users\\ronal\\.nuget\\packages\\",
         "outputPath": "C:\\Users\\ronal\\source\\repos\\Simulator\\RaceSimulator.Library.Utility\\obj\\",
         "projectStyle": "PackageReference",
@@ -84,7 +84,11 @@
         },
         "frameworks": {
           "netcoreapp3.1": {
-            "projectReferences": {}
+            "projectReferences": {
+              "C:\\Users\\ronal\\source\\repos\\Simulator\\RaceSimulator.Library.Core\\RaceSimulator.Library.Core.csproj": {
+                "projectPath": "C:\\Users\\ronal\\source\\repos\\Simulator\\RaceSimulator.Library.Core\\RaceSimulator.Library.Core.csproj"
+              }
+            }
           }
         },
         "warningProperties": {
@@ -143,8 +147,8 @@
               "C:\\Users\\ronal\\source\\repos\\Simulator\\RaceSimulator.Library.Core\\RaceSimulator.Library.Core.csproj": {
                 "projectPath": "C:\\Users\\ronal\\source\\repos\\Simulator\\RaceSimulator.Library.Core\\RaceSimulator.Library.Core.csproj"
               },
-              "C:\\Users\\ronal\\source\\repos\\Simulator\\RaceSimulator.Library.Utility\\RaceSimulator.Library.Utility.csproj": {
-                "projectPath": "C:\\Users\\ronal\\source\\repos\\Simulator\\RaceSimulator.Library.Utility\\RaceSimulator.Library.Utility.csproj"
+              "C:\\Users\\ronal\\source\\repos\\Simulator\\RaceSimulator.Library.Utility\\RaceSimulator.Library.Controller.csproj": {
+                "projectPath": "C:\\Users\\ronal\\source\\repos\\Simulator\\RaceSimulator.Library.Utility\\RaceSimulator.Library.Controller.csproj"
               }
             }
           }

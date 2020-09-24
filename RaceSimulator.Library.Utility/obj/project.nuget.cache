@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "ZxymnqWD7TYTx9ItybpqKlgB+xYzIbQsUnG7t9kzN6vpPG0jrVtkQOp2tiJ/a3eaABfBe4E0OkkUj3QpLdU7/A==",
+  "dgSpecHash": "tkfJk72ttPfCFshsBiJyVOeUtECNX8Z54WmsI50jEZ1XJvJ/8YIapngG+vJgtg8y2PdsiW7dkdWsXhkl4ZtT2A==",
   "success": true,
-  "projectFilePath": "C:\\Users\\ronal\\source\\repos\\Simulator\\RaceSimulator.Library.Utility\\RaceSimulator.Library.Utility.csproj",
+  "projectFilePath": "C:\\Users\\ronal\\source\\repos\\Simulator\\RaceSimulator.Library.Utility\\RaceSimulator.Library.Controller.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }

@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RaceSimulator.View", "RaceS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RaceSimulator.Library.Core", "RaceSimulator.Library.Core\RaceSimulator.Library.Core.csproj", "{0281F004-957A-4466-B118-F5EFD5C67961}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RaceSimulator.Library.Utility", "RaceSimulator.Library.Utility\RaceSimulator.Library.Utility.csproj", "{A4E9638A-FF44-45EB-80C9-68E42DC7B415}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RaceSimulator.Library.Controller", "RaceSimulator.Library.Utility\RaceSimulator.Library.Controller.csproj", "{A4E9638A-FF44-45EB-80C9-68E42DC7B415}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RaceSimulator.Library.Core.Test", "RaceSimulator.Library.Core.Test\RaceSimulator.Library.Core.Test.csproj", "{3FE4357F-2167-470D-B449-E5173CDB89F3}"
 EndProject

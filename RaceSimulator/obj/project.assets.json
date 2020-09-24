@@ -2,6 +2,19 @@
   "version": 3,
   "targets": {
     ".NETCoreApp,Version=v3.1": {
+      "RaceSimulator.Library.Controller/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v3.1",
+        "dependencies": {
+          "RaceSimulator.Library.Core": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/RaceSimulator.Library.Controller.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/RaceSimulator.Library.Controller.dll": {}
+        }
+      },
       "RaceSimulator.Library.Core/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v3.1",
@@ -11,35 +24,25 @@
         "runtime": {
           "bin/placeholder/RaceSimulator.Library.Core.dll": {}
         }
-      },
-      "RaceSimulator.Library.Utility/1.0.0": {
-        "type": "project",
-        "framework": ".NETCoreApp,Version=v3.1",
-        "compile": {
-          "bin/placeholder/RaceSimulator.Library.Utility.dll": {}
-        },
-        "runtime": {
-          "bin/placeholder/RaceSimulator.Library.Utility.dll": {}
-        }
       }
     }
   },
   "libraries": {
+    "RaceSimulator.Library.Controller/1.0.0": {
+      "type": "project",
+      "path": "../RaceSimulator.Library.Utility/RaceSimulator.Library.Controller.csproj",
+      "msbuildProject": "../RaceSimulator.Library.Utility/RaceSimulator.Library.Controller.csproj"
+    },
     "RaceSimulator.Library.Core/1.0.0": {
       "type": "project",
       "path": "../RaceSimulator.Library.Core/RaceSimulator.Library.Core.csproj",
       "msbuildProject": "../RaceSimulator.Library.Core/RaceSimulator.Library.Core.csproj"
-    },
-    "RaceSimulator.Library.Utility/1.0.0": {
-      "type": "project",
-      "path": "../RaceSimulator.Library.Utility/RaceSimulator.Library.Utility.csproj",
-      "msbuildProject": "../RaceSimulator.Library.Utility/RaceSimulator.Library.Utility.csproj"
     }
   },
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v3.1": [
-      "RaceSimulator.Library.Core >= 1.0.0",
-      "RaceSimulator.Library.Utility >= 1.0.0"
+      "RaceSimulator.Library.Controller >= 1.0.0",
+      "RaceSimulator.Library.Core >= 1.0.0"
     ]
   },
   "packageFolders": {
@@ -75,8 +78,8 @@
             "C:\\Users\\ronal\\source\\repos\\Simulator\\RaceSimulator.Library.Core\\RaceSimulator.Library.Core.csproj": {
               "projectPath": "C:\\Users\\ronal\\source\\repos\\Simulator\\RaceSimulator.Library.Core\\RaceSimulator.Library.Core.csproj"
             },
-            "C:\\Users\\ronal\\source\\repos\\Simulator\\RaceSimulator.Library.Utility\\RaceSimulator.Library.Utility.csproj": {
-              "projectPath": "C:\\Users\\ronal\\source\\repos\\Simulator\\RaceSimulator.Library.Utility\\RaceSimulator.Library.Utility.csproj"
+            "C:\\Users\\ronal\\source\\repos\\Simulator\\RaceSimulator.Library.Utility\\RaceSimulator.Library.Controller.csproj": {
+              "projectPath": "C:\\Users\\ronal\\source\\repos\\Simulator\\RaceSimulator.Library.Utility\\RaceSimulator.Library.Controller.csproj"
             }
           }
         }
