@@ -12,9 +12,22 @@ namespace RaceSimulator.Library.Core
 
         public Track() { }
 
-        public Track(string name, SectionTypes[] sections)
+        public Track(string name, SectionTypes[] sectionTypes)
         {
             Name = name;
+            Sections = CreateSectionsFromTypes(sectionTypes);
+        }
+
+        private LinkedList<Section> CreateSectionsFromTypes(SectionTypes[] sectionTypes)
+        {
+            LinkedList<Section> sections = new LinkedList<Section>();
+
+            foreach(SectionTypes sectionType in sectionTypes)
+            {
+                sections.AddLast(new Section(sectionType));
+            }
+
+            return sections;
         }
         
     }

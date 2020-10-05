@@ -1,4 +1,6 @@
 ﻿using RaceSimulator.Library.Controller;
+using RaceSimulator.Library.Core;
+using RaceSimulator.View;
 
 using System;
 using System.Threading;
@@ -9,11 +11,11 @@ namespace RaceSimulator
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
-            Data.Initialize();
+            Competition com = Data.Initialize();
             Data.NextRace();
-
-            Console.WriteLine($"Current Track: {Data.CurrentRace.Track.Name}");
+            Track track = Data.Competition.NextTrack();
+            Console.WriteLine($"Hello World! Welcome to: '{track.Name}'");
+            RaceBuilder.DrawTrack(track);
 
             for (; ; )
             {

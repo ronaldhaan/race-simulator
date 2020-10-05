@@ -25,7 +25,7 @@ namespace RaceSimulator.Library.Controller
 
         public static void AddParticipants()
         {
-            List<IParticipant> participants = new List<IParticipant>
+            Competition.Participants.AddRange(new List<IParticipant>
             {
                 new Driver()
                 {
@@ -42,7 +42,7 @@ namespace RaceSimulator.Library.Controller
                 },
                 new Driver()
                 {
-                    Name = "El Diablo", 
+                    Name = "El Diablo",
                     Equipment = new Car()
                     {
                         Quality = 15,
@@ -53,40 +53,76 @@ namespace RaceSimulator.Library.Controller
                     Points = 0,
                     TeamColor = TeamColor.Red
                 }
-            };
-
-            Competition.Participants.AddRange(participants);
+            });
         }
 
         public static void AddTracks()
         {
-            List<Section> sections = new List<Section>() 
-            { 
-                new Section()
+            List<SectionTypes[]> st = new List<SectionTypes[]>
+            {
+                new SectionTypes[]
                 {
-                    SectionType = SectionTypes.StartGrid,
+                    // ==== First section row =====
+                    SectionTypes.RightCorner,
+                    SectionTypes.Straight,
+                    SectionTypes.StartGrid,
+                    SectionTypes.Straight,
+                    SectionTypes.RightCorner,
+                    SectionTypes.Straight,
+                    SectionTypes.RightCorner,
+                    SectionTypes.LeftCorner,
+                    SectionTypes.RightCorner,
+                    SectionTypes.Straight,
+                    SectionTypes.RightCorner,
+                    SectionTypes.LeftCorner,
+                    SectionTypes.RightCorner,
+                    SectionTypes.Straight,
                 },
-                new Section()
+                new SectionTypes[]
                 {
-                    SectionType = SectionTypes.LeftCorner,
-                },
-                new Section()
-                {
-                    SectionType = SectionTypes.RightCorner,
-                },
-                new Section()
-                {
-                    SectionType = SectionTypes.Straight,
-                },
-            };
+                    SectionTypes.RightCorner,
+                    SectionTypes.RightCorner,
+                    SectionTypes.Straight,
+                    SectionTypes.LeftCorner,
+                    SectionTypes.LeftCorner,
+                    SectionTypes.Straight,
+                    SectionTypes.RightCorner,
+                    SectionTypes.RightCorner,
+                    SectionTypes.Straight,
+                    SectionTypes.LeftCorner,
+                    SectionTypes.LeftCorner,
+                    SectionTypes.Straight,
+                    SectionTypes.RightCorner,
+                    SectionTypes.RightCorner,
+                    SectionTypes.Straight,
+                    SectionTypes.Straight,
+                    SectionTypes.Straight,
+                    SectionTypes.Straight,
+                    SectionTypes.RightCorner,
+                    SectionTypes.RightCorner,
+                    SectionTypes.Straight,
+                    SectionTypes.LeftCorner,
+                    SectionTypes.LeftCorner,
+                    SectionTypes.Straight,
+                    SectionTypes.RightCorner,
+                    SectionTypes.RightCorner,
+                    SectionTypes.Straight,
+                    SectionTypes.LeftCorner,
+                    SectionTypes.LeftCorner,
+                    SectionTypes.Straight,
+                    SectionTypes.RightCorner,
+                    SectionTypes.RightCorner,
+                    SectionTypes.Straight,
+                    SectionTypes.Finish,
+                    SectionTypes.StartGrid,
+                    SectionTypes.Straight,
+                }
+            };     
 
             List<Track> trackList = new List<Track>()
             {
-                new Track()
-                {
-                    Name = "Finish",
-                    Sections = new LinkedList<Section>(sections),
-                }
+                new Track("Race of the living", st[0]),
+                new Track("zigZag", st[1])
             };
 
             foreach (Track track in trackList)

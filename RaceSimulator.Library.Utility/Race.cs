@@ -19,18 +19,21 @@ namespace RaceSimulator.Library.Controller
         
         public DateTime StartTime { get; set; }
 
-        public Dictionary<Section, SectionData> Positions { get; }
+        public Dictionary<Section, SectionData> Positions { get => _positions; }
 
         public Race() 
         {
             StartTime = DateTime.UtcNow;
             _random = new Random(DateTime.Now.Millisecond);
+            _positions = new Dictionary<Section, SectionData>();
         }
 
         public Race(Track track, List<IParticipant> participants) : this()
         {
             Track = track;
             Participants = participants;
+            PlaceParticipants();
+            RandomizeEquipment();
         }
 
         public SectionData GetSectionData(Section section)
@@ -46,6 +49,25 @@ namespace RaceSimulator.Library.Controller
             }
 
             return data;
+        }
+
+        public void PlaceParticipants()
+        {
+            bool next = false;
+            foreach(Section section in Track.Sections)
+            {
+                if (next)
+                {
+                    _positions.Add(section, new SectionData(Participants[0], 2, Participants[1], 1));
+                }
+
+                if (section.SectionType == Core.Enumerations.SectionTypes.StartGrid)
+                {
+                    next = true;
+                    _positions.Add(section, new SectionData(Participants[0], 2, Participants[1], 1));
+                }
+
+            }
         }
 
         public void RandomizeEquipment()
