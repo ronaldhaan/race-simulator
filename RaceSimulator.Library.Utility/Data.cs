@@ -121,7 +121,7 @@ namespace RaceSimulator.Library.Controller
 
             List<Track> trackList = new List<Track>()
             {
-                new Track("Race of the living", st[0]),
+                //new Track("Race of the living", st[0]),
                 new Track("zigZag", st[1])
             };
 

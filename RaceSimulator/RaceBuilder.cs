@@ -311,8 +311,8 @@ namespace RaceSimulator.View
                         col = 2;
                         break;
                     case Direction.West:
-                        row = 2;
-                        col = 4;
+                        row = 1;
+                        col = 2;
                         break;
                     case Direction.East:
                         row = 2;

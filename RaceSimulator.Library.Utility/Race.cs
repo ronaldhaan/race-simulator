@@ -56,16 +56,16 @@ namespace RaceSimulator.Library.Controller
             bool next = false;
             foreach(Section section in Track.Sections)
             {
-                if (next)
-                {
-                    _positions.Add(section, new SectionData(Participants[0], 2, Participants[1], 1));
-                }
+                //if (next)
+                //{
+                //    _positions.Add(section, new SectionData(Participants[0], 2, Participants[1], 1));
+                //}
 
-                if (section.SectionType == Core.Enumerations.SectionTypes.StartGrid)
-                {
+                //if (section.SectionType == Core.Enumerations.SectionTypes.StartGrid)
+                //{
                     next = true;
                     _positions.Add(section, new SectionData(Participants[0], 2, Participants[1], 1));
-                }
+                //}
 
             }
         }
