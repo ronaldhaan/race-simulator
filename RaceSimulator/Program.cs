@@ -11,16 +11,27 @@ namespace RaceSimulator
     {
         static void Main(string[] args)
         {
-            Competition com = Data.Initialize();
-            Data.NextRace();
-            Track track = Data.Competition.NextTrack();
-            Console.WriteLine($"Hello World! Welcome to: '{track.Name}'");
-            RaceBuilder.DrawTrack(track);
+            Competition competition = Data.Initialize();
+            Track track = Data.NextRace();
+            
+            Console.WriteLine($"{string.Join("", args)}Hello World! Welcome to: '{track.Name}'");
+            Data.CurrentRace.PositionChanged += ConsoleRaceBuilder.RedrawTrack;
+            ConsoleRaceBuilder.DrawTrack(track);
 
-            for (; ; )
+            Start();
+        }
+
+        private static void Start()
+        {
+            Console.ReadKey();
+
+            while(true)
             {
                 Thread.Sleep(100);
+                Data.CurrentRace.Move();
             }
+
+            //Start();
         }
     }
 }

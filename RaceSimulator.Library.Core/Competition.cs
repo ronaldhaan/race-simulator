@@ -1,8 +1,6 @@
 ﻿using RaceSimulator.Library.Core.Interfaces;
 
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace RaceSimulator.Library.Core
 {
@@ -11,8 +9,6 @@ namespace RaceSimulator.Library.Core
         public List<IParticipant> Participants { get; set; }
 
         public Queue<Track> Tracks { get; set; }
-
-        public Competition() { }
 
         public Competition(List<IParticipant> participants, Queue<Track> tracks)
         {
@@ -26,7 +22,7 @@ namespace RaceSimulator.Library.Core
 
             if(Tracks != null && Tracks.Count > 0)
             {
-                track = Tracks.Peek();
+                track = Tracks.Dequeue();
             }
 
             return track;

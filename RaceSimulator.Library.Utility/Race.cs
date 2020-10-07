@@ -1,44 +1,51 @@
 ﻿using RaceSimulator.Library.Core;
+using RaceSimulator.Library.Core.Enumerations;
 using RaceSimulator.Library.Core.Interfaces;
 
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Reflection.Metadata.Ecma335;
 
 namespace RaceSimulator.Library.Controller
 {
+    public delegate void PositionChangedObserver(object obj, EventArgs e);
+
     public class Race
     {
-        private Random _random;
-
+        private readonly Random _random;
         private Dictionary<Section, SectionData> _positions;
 
-        public Track Track { get; set; }
+        public event PositionChangedObserver PositionChanged; 
 
         public List<IParticipant> Participants { get; set; }
         
+        public Dictionary<Section, SectionData> Positions { get => _positions; private set => _positions = value; }
+
         public DateTime StartTime { get; set; }
 
-        public Dictionary<Section, SectionData> Positions { get => _positions; }
+        public Track Track { get; set; }
 
-        public Race() 
+        public Race(Track track, List<IParticipant> participants)
         {
-            StartTime = DateTime.UtcNow;
             _random = new Random(DateTime.Now.Millisecond);
-            _positions = new Dictionary<Section, SectionData>();
-        }
 
-        public Race(Track track, List<IParticipant> participants) : this()
-        {
-            Track = track;
             Participants = participants;
+            Positions = new Dictionary<Section, SectionData>();
+            StartTime = DateTime.UtcNow;
+            Track = track;
+
             PlaceParticipants();
             RandomizeEquipment();
         }
 
         public SectionData GetSectionData(Section section)
         {
-            SectionData data = new SectionData();
+            if(section == null)
+            {
+                return null;
+            }
+
+            SectionData data = new SectionData(null, 0, null, 0);
             if(Positions.TryGetValue(section, out SectionData sectionData))
             {
                 data = sectionData;
@@ -51,31 +58,51 @@ namespace RaceSimulator.Library.Controller
             return data;
         }
 
+        /// <summary>
+        /// Places the participants on the track.
+        /// </summary>
         public void PlaceParticipants()
         {
-            bool next = false;
             foreach(Section section in Track.Sections)
             {
-                //if (next)
-                //{
-                //    _positions.Add(section, new SectionData(Participants[0], 2, Participants[1], 1));
-                //}
+                SectionData sd = new SectionData(null, 0, null, 0);
 
-                //if (section.SectionType == Core.Enumerations.SectionTypes.StartGrid)
-                //{
-                    next = true;
-                    _positions.Add(section, new SectionData(Participants[0], 2, Participants[1], 1));
-                //}
+                if (section.SectionType == SectionTypes.StartGrid)
+                {
+                    sd.Left = Participants[0];
+                    sd.DistanceLeft = 2;
+                    sd.Right = Participants[1];
+                    sd.DistanceRight = 1;
+                }
 
+                Positions.Add(section, sd);
             }
+        }
+        public void Move()
+        {
+            SectionData sectionData = GetSectionData(Track.Sections.Last.Value);
+            var newPositions = new Dictionary<Section, SectionData>();
+
+            foreach (KeyValuePair<Section, SectionData> keyValue in Positions)
+            {
+                newPositions.Add(keyValue.Key, sectionData);
+                sectionData = keyValue.Value;
+            }
+
+            Positions = newPositions;
+
+            PositionChanged(Track, new EventArgs());
         }
 
         public void RandomizeEquipment()
         {
-            foreach(var participant in Participants)
+            foreach(IParticipant p in Participants)
             {
-                participant.Equipment.Quality = _random.Next();
-                participant.Equipment.Performance = _random.Next();
+                if (p.Equipment != null)
+                {
+                    p.Equipment.Quality = _random.Next();
+                    p.Equipment.Performance = _random.Next();
+                }
             }
         }
 

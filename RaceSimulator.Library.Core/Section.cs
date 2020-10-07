@@ -6,8 +6,6 @@ namespace RaceSimulator.Library.Core
     {
         public SectionTypes SectionType { get; set; }
 
-        public Section() { }
-
         public Section(SectionTypes sectionTypes)
         {
             SectionType = sectionTypes;

@@ -42,8 +42,8 @@ namespace RaceSimulator.Library.Core.Test
 
             competition.Tracks.Enqueue(track);
 
+            competition.NextTrack();
             Track result = competition.NextTrack();
-            result = competition.NextTrack();
 
             Assert.IsNull(result);
         }

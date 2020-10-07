@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace RaceSimulator.Library.Core.Enumerations
+﻿namespace RaceSimulator.Library.Core.Enumerations
 {
     public enum SectionTypes
     {

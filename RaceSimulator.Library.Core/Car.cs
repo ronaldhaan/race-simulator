@@ -1,9 +1,5 @@
 ﻿using RaceSimulator.Library.Core.Interfaces;
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace RaceSimulator.Library.Core
 {
     public class Car : IEquipment
@@ -12,8 +8,6 @@ namespace RaceSimulator.Library.Core
         public int Quality { get; set; }
         public int Speed { get; set; }
         public bool IsBroken { get; set; }
-
-        public Car() { }
 
         public Car(int performance, int quality, int speed, bool isBroken)
         {

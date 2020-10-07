@@ -1,7 +1,5 @@
 ﻿using RaceSimulator.Library.Core.Enumerations;
 
-using System;
-
 namespace RaceSimulator.Library.Core.Interfaces
 {
     public interface IParticipant

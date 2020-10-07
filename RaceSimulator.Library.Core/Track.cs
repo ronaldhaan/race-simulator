@@ -10,8 +10,6 @@ namespace RaceSimulator.Library.Core
 
         public LinkedList<Section> Sections { get; set; }
 
-        public Track() { }
-
         public Track(string name, SectionTypes[] sectionTypes)
         {
             Name = name;
@@ -23,7 +21,7 @@ namespace RaceSimulator.Library.Core
             LinkedList<Section> sections = new LinkedList<Section>();
 
             foreach(SectionTypes sectionType in sectionTypes)
-            {
+            { 
                 sections.AddLast(new Section(sectionType));
             }
 

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace RaceSimulator.Library.Core.Interfaces
+﻿namespace RaceSimulator.Library.Core.Interfaces
 {
     public interface IEquipment
     {

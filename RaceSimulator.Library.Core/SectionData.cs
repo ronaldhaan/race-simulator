@@ -1,9 +1,5 @@
 ﻿using RaceSimulator.Library.Core.Interfaces;
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace RaceSimulator.Library.Core
 {
     public class SectionData
@@ -18,7 +14,6 @@ namespace RaceSimulator.Library.Core
 
         public int DistanceRight { get; set; }
 
-        public SectionData() { }
 
         public SectionData(IParticipant left, int distanceLeft, IParticipant right, int distanceRight)
         {

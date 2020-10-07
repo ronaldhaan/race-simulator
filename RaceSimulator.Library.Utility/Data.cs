@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.Design;
-using System.Text;
+﻿using System.Collections.Generic;
 
 using RaceSimulator.Library.Core;
 using RaceSimulator.Library.Core.Enumerations;
@@ -27,58 +24,26 @@ namespace RaceSimulator.Library.Controller
         {
             Competition.Participants.AddRange(new List<IParticipant>
             {
-                new Driver()
-                {
-                    Name = "Speedster",
-                    Equipment = new Car()
-                    {
-                        Quality = 10,
-                        IsBroken = false,
-                        Performance = 10,
-                        Speed = 10
-                    },
-                    Points = 0,
-                    TeamColor = TeamColor.Blue
-                },
-                new Driver()
-                {
-                    Name = "El Diablo",
-                    Equipment = new Car()
-                    {
-                        Quality = 15,
-                        IsBroken = false,
-                        Performance = 20,
-                        Speed = 5
-                    },
-                    Points = 0,
-                    TeamColor = TeamColor.Red
-                }
+                new Driver(
+                    name: "Speedster",
+                    points: 0,
+                    equipment: new Car(10,10, 10, false),
+                    teamColor: TeamColor.Blue
+                ),
+                new Driver(
+                    name: "El Diablo", 
+                    points: 0, 
+                    equipment: new Car(20, 15, 5, false), 
+                    teamColor: TeamColor.Red
+                )
             });
         }
 
         public static void AddTracks()
-        {
-            List<SectionTypes[]> st = new List<SectionTypes[]>
+        {   
+            List<Track> trackList = new List<Track>()
             {
-                new SectionTypes[]
-                {
-                    // ==== First section row =====
-                    SectionTypes.RightCorner,
-                    SectionTypes.Straight,
-                    SectionTypes.StartGrid,
-                    SectionTypes.Straight,
-                    SectionTypes.RightCorner,
-                    SectionTypes.Straight,
-                    SectionTypes.RightCorner,
-                    SectionTypes.LeftCorner,
-                    SectionTypes.RightCorner,
-                    SectionTypes.Straight,
-                    SectionTypes.RightCorner,
-                    SectionTypes.LeftCorner,
-                    SectionTypes.RightCorner,
-                    SectionTypes.Straight,
-                },
-                new SectionTypes[]
+                new Track("zigZag", new SectionTypes[]
                 {
                     SectionTypes.RightCorner,
                     SectionTypes.RightCorner,
@@ -116,13 +81,25 @@ namespace RaceSimulator.Library.Controller
                     SectionTypes.Finish,
                     SectionTypes.StartGrid,
                     SectionTypes.Straight,
-                }
-            };     
-
-            List<Track> trackList = new List<Track>()
-            {
-                //new Track("Race of the living", st[0]),
-                new Track("zigZag", st[1])
+                }),
+                new Track("Race of the living", new SectionTypes[]
+                {
+                    // ==== First section row =====
+                    SectionTypes.RightCorner,
+                    SectionTypes.Straight,
+                    SectionTypes.StartGrid,
+                    SectionTypes.Straight,
+                    SectionTypes.RightCorner,
+                    SectionTypes.Straight,
+                    SectionTypes.RightCorner,
+                    SectionTypes.LeftCorner,
+                    SectionTypes.RightCorner,
+                    SectionTypes.Straight,
+                    SectionTypes.RightCorner,
+                    SectionTypes.LeftCorner,
+                    SectionTypes.RightCorner,
+                    SectionTypes.Straight,
+                }),
             };
 
             foreach (Track track in trackList)
@@ -131,7 +108,7 @@ namespace RaceSimulator.Library.Controller
             }
         }
 
-        public static void NextRace()
+        public static Track NextRace()
         {
             Track track = Competition.NextTrack();
 
@@ -139,6 +116,8 @@ namespace RaceSimulator.Library.Controller
             {
                 CurrentRace = new Race(track, Competition.Participants);
             }
+
+            return track;
         }
     }
 }

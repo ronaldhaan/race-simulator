@@ -1,19 +1,22 @@
 ﻿using RaceSimulator.Library.Controller;
 using RaceSimulator.Library.Core;
 using RaceSimulator.Library.Core.Enumerations;
+using RaceSimulator.Library.Core.Interfaces;
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
+using System.Drawing;
 using System.Text;
 
 namespace RaceSimulator.View
 {
-    public static class RaceBuilder
+    public static class ConsoleRaceBuilder
     {
         private static int OrigTop;
         private static int OrigLeft;
+
+        /// <summary>
+        /// Initializes the default start values of the <see cref="ConsoleRaceBuilder"/> class.
+        /// </summary>
         public static void Initialize()
         {
             OrigTop = Console.CursorTop;
@@ -32,8 +35,8 @@ namespace RaceSimulator.View
         private static readonly string[] _finishVertical = 
             { 
                 "|     |", 
-                "|     |", 
                 "|-#-#-|",
+                "|     |", 
                 "|     |" 
             };
 
@@ -91,13 +94,12 @@ namespace RaceSimulator.View
 
         private static readonly string[] _startGridVertical =
             {
+                "| _   |",
+                "|   _ |",
                 "|     |",
-                "|     |",
-                "|-^-^-|",
                 "|     |"
             };
 
-        private const int TRACK_WIDTH = 5;
         private enum Direction
         {
             North,
@@ -109,33 +111,47 @@ namespace RaceSimulator.View
         private static Direction _direction = Direction.North;
 
         #endregion sectionDefinitions
+
+        public static void RedrawTrack(object obj, EventArgs e)
+        {
+            DrawTrack((Track)obj);
+        }
+
         /// <summary>
-        /// Draws a stack
+        /// Draws a <see cref="Track"/> on the <see cref="Console"/>
         /// </summary>
         /// <param name="track"></param>
         /// <returns></returns>
         public static void DrawTrack(Track track)
         {
-            int x = 0;
-            int y = 1;
+            Point cursorPoint = new Point(0, 1);
             foreach(Section section in track.Sections)
             {
-                string[] sectionDef = getSectionDefenition(section);
+                string[] sectionDef = GetSectionDefenition(section);
 
-                SectionData data = Data.CurrentRace.GetSectionData(section);
+                SectionData sectionData = Data.CurrentRace.GetSectionData(section);
 
-                if (data.Left != null || data.Right != null)
+                if (sectionData.Left != null || sectionData.Right != null)
                 {
-                    sectionDef = SetParticipantsOnSection(data, sectionDef);
+                    sectionDef = SetParticipantsOnSection(sectionData, sectionDef);
                 }
 
-                DrawSection(section, sectionDef, x, y);
+                DrawSection(sectionDef, cursorPoint);
 
-                (x, y) = GetNewPositions(x, y);
+                cursorPoint = GetNextSectionPoint(cursorPoint);
             }
+
+            Console.CursorTop = Console.WindowTop + Console.WindowHeight - 1;
+            Console.CursorLeft = 0;
         }
 
-        private static (int x, int y) GetNewPositions(int x, int y)
+        /// <summary>
+        /// Gets the new <see cref="Console"/> positions as x and y coordinates.
+        /// </summary>
+        /// <param name="x">The old X coordinate</param>
+        /// <param name="y">The old y coordinate</param>
+        /// <returns></returns>
+        private static Point GetNextSectionPoint(Point cursorPoint)
         {
             int sectionDefHeight = _finishHorizontal.Length;
             int sectionDefWitdth = _finishHorizontal[0].Length + 2;
@@ -143,29 +159,34 @@ namespace RaceSimulator.View
             switch (_direction)
             {
                 case Direction.North:
-                    if (y >= sectionDefHeight)
+                    if (cursorPoint.Y >= sectionDefHeight)
                     {
-                        y -= sectionDefHeight;
+                        cursorPoint.Y -= sectionDefHeight;
                     }
                     break;
                 case Direction.East:
-                    x += sectionDefWitdth;
+                    cursorPoint.X += sectionDefWitdth;
                     break;
                 case Direction.South:
-                    y += sectionDefHeight;
+                    cursorPoint.Y += sectionDefHeight;
                     break;
                 case Direction.West:
-                    if (x >= sectionDefWitdth)
+                    if (cursorPoint.X >= sectionDefWitdth)
                     {
-                        x -= sectionDefWitdth;
+                        cursorPoint.X -= sectionDefWitdth;
                     }
                     break;
             }
 
-            return (x, y);
+            return cursorPoint;
         }
 
-        private static string[] getSectionDefenition(Section section)
+        /// <summary>
+        /// Gets the <see cref="Section"/> definition of the section using <see cref="SectionTypes"/>
+        /// </summary>
+        /// <param name="section">The <see cref="Section"/> Object</param>
+        /// <returns>The definition of the given <see cref="Section"/> Object </returns>
+        private static string[] GetSectionDefenition(Section section)
         {
             string[] drawString = null;
             switch (section.SectionType)
@@ -258,18 +279,32 @@ namespace RaceSimulator.View
             return drawString;
         }
 
-        private static void DrawSection(Section section, string[] sectionDef, int x, int y)
+        /// <summary>
+        /// Draws the <see cref="Section"/> in the <see cref="Console"/>
+        /// </summary>
+        /// <param name="section">The <see cref="Section"/> Object that will be written.</param>
+        /// <param name="sectionDef">The definition of the <see cref="Section"/></param>
+        /// <param name="x">The X coordinate in the <see cref="Console"/> where the Section will be written</param>
+        /// <param name="y">The Y coordinate in the <see cref="Console"/> where the Section will be written</param>
+        private static void DrawSection(string[] sectionDef, Point cursorPoint)
         {
+            int y = cursorPoint.Y;
             foreach (string def in sectionDef)
             {
-                WriteAt(def, x, y);
+                WriteAt(def, cursorPoint.X, y);
                 y++;
             }
         }
 
+        /// <summary>
+        /// Sets the <see cref="IParticipant"/> in the <see cref="Section"/> definition using it's <see cref="SectionData"/> Object.
+        /// </summary>
+        /// <param name="data">The <see cref="SectionData"/> of the <see cref="Section"/> Object</param>
+        /// <param name="sectionDef">The <see cref="Section"/> definition.</param>
+        /// <returns>The <see cref="Section"/> definition with the <see cref="IParticipant"/>(s)</returns>
         private static string[] SetParticipantsOnSection(SectionData data, string[] sectionDef)
         {            
-                if (data.Left != null)
+            if (data.Left != null)
             {
                 int row = 0;
                 int col = 0;
@@ -325,6 +360,14 @@ namespace RaceSimulator.View
             return sectionDef;
         }
 
+        /// <summary>
+        /// Writes a <see cref="IParticipant"/> on a specific point in the <see cref="Section"/> definition.
+        /// </summary>
+        /// <param name="sectionDef">The <see cref="Section"/> definition</param>
+        /// <param name="row">The row(x) of the point</param>
+        /// <param name="col">The column(y) of the point</param>
+        /// <param name="p">The character that will represent the <see cref="IParticipant"/></param>
+        /// <returns>The <see cref="Section"/> definition with the <see cref="IParticipant"/>(s)</returns>
         private static string[] WriteParticipant(string[] sectionDef, int row, int col, char p)
         {
             string[] newDef = new string[sectionDef.Length];
@@ -342,7 +385,7 @@ namespace RaceSimulator.View
             {
                 char c = defRow[i];
                     
-                if (i == col && char.IsWhiteSpace(c) && !done)
+                if (i == col && !done)
                 {
                     done = true;
                     stringBuilder.Append(p);
@@ -361,6 +404,12 @@ namespace RaceSimulator.View
 
         }
 
+        /// <summary>
+        /// Writes a string on the given x and y coordinates.
+        /// </summary>
+        /// <param name="s">The string that is gonna be written</param>
+        /// <param name="x">The X coordinate</param>
+        /// <param name="y">The Y coordinate</param>
         private static void WriteAt(string s, int x, int y)
         {
             try
