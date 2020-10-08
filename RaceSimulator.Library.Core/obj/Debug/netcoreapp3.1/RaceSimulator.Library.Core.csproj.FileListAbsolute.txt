@@ -6,3 +6,4 @@ C:\Users\ronal\source\repos\Simulator\RaceSimulator.Library.Core\obj\Debug\netco
 C:\Users\ronal\source\repos\Simulator\RaceSimulator.Library.Core\obj\Debug\netcoreapp3.1\RaceSimulator.Library.Core.csproj.CoreCompileInputs.cache
 C:\Users\ronal\source\repos\Simulator\RaceSimulator.Library.Core\obj\Debug\netcoreapp3.1\RaceSimulator.Library.Core.dll
 C:\Users\ronal\source\repos\Simulator\RaceSimulator.Library.Core\obj\Debug\netcoreapp3.1\RaceSimulator.Library.Core.pdb
+C:\Users\ronal\source\repos\Simulator\RaceSimulator.Library.Core\obj\Debug\netcoreapp3.1\RaceSimulator.Library.Core.csprojAssemblyReference.cache

@@ -52,9 +52,9 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\ronal\\source\\repos\\Simulator\\RaceSimulator\\RaceSimulator.View.csproj",
-      "projectName": "RaceSimulator.View",
-      "projectPath": "C:\\Users\\ronal\\source\\repos\\Simulator\\RaceSimulator\\RaceSimulator.View.csproj",
+      "projectUniqueName": "C:\\Users\\ronal\\source\\repos\\Simulator\\RaceSimulator\\RaceSimulator.View.ConsoleApp.csproj",
+      "projectName": "RaceSimulator.View.ConsoleApp",
+      "projectPath": "C:\\Users\\ronal\\source\\repos\\Simulator\\RaceSimulator\\RaceSimulator.View.ConsoleApp.csproj",
       "packagesPath": "C:\\Users\\ronal\\.nuget\\packages\\",
       "outputPath": "C:\\Users\\ronal\\source\\repos\\Simulator\\RaceSimulator\\obj\\",
       "projectStyle": "PackageReference",

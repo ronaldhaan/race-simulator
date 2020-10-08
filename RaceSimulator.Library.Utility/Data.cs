@@ -12,12 +12,11 @@ namespace RaceSimulator.Library.Controller
 
         public static Race CurrentRace { get; set; }
 
-        public static Competition Initialize()
+        public static void Initialize()
         {
             Competition = new Competition(new List<IParticipant>(), new Queue<Track>());
             AddParticipants();
             AddTracks();
-            return Competition;
         }
 
         public static void AddParticipants()
@@ -27,13 +26,13 @@ namespace RaceSimulator.Library.Controller
                 new Driver(
                     name: "Speedster",
                     points: 0,
-                    equipment: new Car(10,10, 10, false),
+                    equipment: new Car(5,10, 0, false),
                     teamColor: TeamColor.Blue
                 ),
                 new Driver(
                     name: "El Diablo", 
                     points: 0, 
-                    equipment: new Car(20, 15, 5, false), 
+                    equipment: new Car(5, 10, 0, false), 
                     teamColor: TeamColor.Red
                 )
             });

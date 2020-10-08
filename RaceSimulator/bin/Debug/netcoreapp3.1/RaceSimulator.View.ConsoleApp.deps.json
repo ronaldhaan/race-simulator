@@ -1,0 +1,50 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v3.1",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v3.1": {
+      "RaceSimulator.View.ConsoleApp/1.0.0": {
+        "dependencies": {
+          "RaceSimulator.Library.Controller": "1.0.0",
+          "RaceSimulator.Library.Core": "1.0.0"
+        },
+        "runtime": {
+          "RaceSimulator.View.ConsoleApp.dll": {}
+        }
+      },
+      "RaceSimulator.Library.Controller/1.0.0": {
+        "dependencies": {
+          "RaceSimulator.Library.Core": "1.0.0"
+        },
+        "runtime": {
+          "RaceSimulator.Library.Controller.dll": {}
+        }
+      },
+      "RaceSimulator.Library.Core/1.0.0": {
+        "runtime": {
+          "RaceSimulator.Library.Core.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "RaceSimulator.View.ConsoleApp/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "RaceSimulator.Library.Controller/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "RaceSimulator.Library.Core/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

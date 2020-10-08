@@ -23,7 +23,6 @@ namespace RaceSimulator.Library.Core.Test
         [Test]
         public void GetSectionData_Section_Null()
         { 
-
             SectionData result = _race.GetSectionData(null);
 
             Assert.IsNull(result);

@@ -7,7 +7,7 @@ using System;
 using System.Drawing;
 using System.Text;
 
-namespace RaceSimulator.View
+namespace RaceSimulator.View.ConsoleApp
 {
     public static class ConsoleRaceBuilder
     {
@@ -15,7 +15,7 @@ namespace RaceSimulator.View
         private static int OrigLeft;
 
         /// <summary>
-        /// Initializes the default start values of the <see cref="ConsoleRaceBuilder"/> class.
+        /// Initializes the start values of the <see cref="ConsoleRaceBuilder"/> class.
         /// </summary>
         public static void Initialize()
         {
@@ -112,9 +112,9 @@ namespace RaceSimulator.View
 
         #endregion sectionDefinitions
 
-        public static void RedrawTrack(object obj, EventArgs e)
+        public static void RedrawTrack(object obj, ParticipantsChangedEventArgs e)
         {
-            DrawTrack((Track)obj);
+            DrawTrack(e.Track);
         }
 
         /// <summary>

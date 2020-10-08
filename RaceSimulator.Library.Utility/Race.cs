@@ -4,18 +4,19 @@ using RaceSimulator.Library.Core.Interfaces;
 
 using System;
 using System.Collections.Generic;
-using System.Reflection.Metadata.Ecma335;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Timers;
 
 namespace RaceSimulator.Library.Controller
 {
-    public delegate void PositionChangedObserver(object obj, EventArgs e);
-
     public class Race
     {
-        private readonly Random _random;
         private Dictionary<Section, SectionData> _positions;
+        private readonly Random _random;
+        private Timer _timer;
 
-        public event PositionChangedObserver PositionChanged; 
+        public event EventHandler<ParticipantsChangedEventArgs> ParticipantsChanged;
 
         public List<IParticipant> Participants { get; set; }
         
@@ -28,6 +29,9 @@ namespace RaceSimulator.Library.Controller
         public Race(Track track, List<IParticipant> participants)
         {
             _random = new Random(DateTime.Now.Millisecond);
+            _timer = new Timer(500);
+            _timer.Enabled = true;
+            _timer.Elapsed += OnTimedEvent;
 
             Participants = participants;
             Positions = new Dictionary<Section, SectionData>();
@@ -78,21 +82,6 @@ namespace RaceSimulator.Library.Controller
                 Positions.Add(section, sd);
             }
         }
-        public void Move()
-        {
-            SectionData sectionData = GetSectionData(Track.Sections.Last.Value);
-            var newPositions = new Dictionary<Section, SectionData>();
-
-            foreach (KeyValuePair<Section, SectionData> keyValue in Positions)
-            {
-                newPositions.Add(keyValue.Key, sectionData);
-                sectionData = keyValue.Value;
-            }
-
-            Positions = newPositions;
-
-            PositionChanged(Track, new EventArgs());
-        }
 
         public void RandomizeEquipment()
         {
@@ -100,10 +89,65 @@ namespace RaceSimulator.Library.Controller
             {
                 if (p.Equipment != null)
                 {
-                    p.Equipment.Quality = _random.Next();
-                    p.Equipment.Performance = _random.Next();
+                    p.Equipment.Quality = _random.Next(10);
+                    p.Equipment.Performance = _random.Next(10);
                 }
             }
+        }
+
+        public void Start()
+        {
+            _timer.Start();
+        }
+
+        public void OnTimedEvent(object obj, EventArgs e)
+        {
+            var newPositions = new Dictionary<Section, SectionData>();
+
+            SectionData prevSD = Positions.Last().Value;
+            foreach (KeyValuePair<Section, SectionData> keyValue in Positions)
+            {  
+                Section currentSection = keyValue.Key;
+                SectionData currentSD = keyValue.Value;
+
+                if (currentSD.Left != null)
+                {
+                    currentSD.Left.Equipment = CalculateSpeed(currentSD.Left.Equipment);
+                    if (currentSD.Left.Equipment.Speed >= 100)
+                    {
+                        currentSD.Left.Equipment.Speed = 0;
+                        prevSD.Left = currentSD.Left;
+                        currentSD.Left = null;
+                    }
+                }
+
+                if (currentSD.Right != null)
+                {
+                    currentSD.Right.Equipment = CalculateSpeed(currentSD.Right.Equipment);
+                    if (currentSD.Right.Equipment.Speed >= 100)
+                    {
+                        currentSD.Right.Equipment.Speed = 0;
+                        prevSD.Right = currentSD.Right;
+                        currentSD.Right = null;
+                    }
+                }
+
+                newPositions.Add(currentSection, prevSD);
+                prevSD = currentSD;
+            }
+
+            Positions = newPositions;
+
+            ParticipantsChanged(this, new ParticipantsChangedEventArgs() { Track = Track });
+
+        }
+
+
+        private IEquipment CalculateSpeed(IEquipment e)
+        {
+            e.Speed += e.Quality * e.Performance;
+
+            return e;
         }
 
 
