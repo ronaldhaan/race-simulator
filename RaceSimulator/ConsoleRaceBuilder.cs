@@ -1,11 +1,14 @@
 ﻿using RaceSimulator.Library.Controller;
 using RaceSimulator.Library.Core;
 using RaceSimulator.Library.Core.Enumerations;
+using RaceSimulator.Library.Core.Events;
 using RaceSimulator.Library.Core.Interfaces;
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
+using System.Text.Json;
 
 namespace RaceSimulator.View.ConsoleApp
 {
@@ -13,6 +16,8 @@ namespace RaceSimulator.View.ConsoleApp
     {
         private static int OrigTop;
         private static int OrigLeft;
+        private static Direction _direction = Direction.North;
+        private static readonly List<IParticipant> _participants = new List<IParticipant>();
 
         /// <summary>
         /// Initializes the start values of the <see cref="ConsoleRaceBuilder"/> class.
@@ -27,10 +32,10 @@ namespace RaceSimulator.View.ConsoleApp
         #region sectionDefinitions
         private static readonly string[] _finishHorizontal = 
             { 
-                "-----", 
-                "  #  ", 
-                "  #  ",
-                "-----" 
+                "-------", 
+                "   #   ", 
+                "   #   ",
+                "-------" 
             };
         private static readonly string[] _finishVertical = 
             { 
@@ -99,18 +104,8 @@ namespace RaceSimulator.View.ConsoleApp
                 "|     |",
                 "|     |"
             };
-
-        private enum Direction
-        {
-            North,
-            East,
-            South,
-            West
-        }
-
-        private static Direction _direction = Direction.North;
-
         #endregion sectionDefinitions
+
 
         public static void RedrawTrack(object obj, ParticipantsChangedEventArgs e)
         {
@@ -128,7 +123,6 @@ namespace RaceSimulator.View.ConsoleApp
             foreach(Section section in track.Sections)
             {
                 string[] sectionDef = GetSectionDefenition(section);
-
                 SectionData sectionData = Data.CurrentRace.GetSectionData(section);
 
                 if (sectionData.Left != null || sectionData.Right != null)
@@ -154,7 +148,7 @@ namespace RaceSimulator.View.ConsoleApp
         private static Point GetNextSectionPoint(Point cursorPoint)
         {
             int sectionDefHeight = _finishHorizontal.Length;
-            int sectionDefWitdth = _finishHorizontal[0].Length + 2;
+            int sectionDefWitdth = _finishHorizontal[0].Length;
             
             switch (_direction)
             {
@@ -188,7 +182,7 @@ namespace RaceSimulator.View.ConsoleApp
         /// <returns>The definition of the given <see cref="Section"/> Object </returns>
         private static string[] GetSectionDefenition(Section section)
         {
-            string[] drawString = null;
+            string[] drawString;
             switch (section.SectionType)
             {
                 case SectionTypes.Finish:
@@ -200,6 +194,7 @@ namespace RaceSimulator.View.ConsoleApp
                             break;
                         case Direction.East:
                         case Direction.West:
+                        default:
                             drawString = _finishHorizontal;
                             break;
                     }
@@ -220,6 +215,7 @@ namespace RaceSimulator.View.ConsoleApp
                             _direction = Direction.East;
                             break;
                         case Direction.East:
+                        default:
                             drawString = _rightDownCorner;
                             _direction = Direction.North;
                             break;
@@ -255,8 +251,9 @@ namespace RaceSimulator.View.ConsoleApp
                         case Direction.South:
                             drawString = _startGridVertical;
                             break;
-                        case Direction.East:
-                        case Direction.West:
+                        //case Direction.East:
+                        //case Direction.West:
+                        default:
                             drawString = _startGridHorizontal;
                             break;
                     }
@@ -269,13 +266,15 @@ namespace RaceSimulator.View.ConsoleApp
                         case Direction.South:
                             drawString = _straightVertical;
                             break;
-                        case Direction.East:
-                        case Direction.West:
+                        //case Direction.East:
+                        //case Direction.West:
+                        default:
                             drawString = _straightHorizontal;
                             break;
                     }
                     break;
             }
+            
             return drawString;
         }
 
@@ -306,102 +305,61 @@ namespace RaceSimulator.View.ConsoleApp
         {            
             if (data.Left != null)
             {
-                int row = 0;
-                int col = 0;
-                switch (_direction)
+                Point pos = _direction switch
                 {
-                    case Direction.North:
-                        row = 1;
-                        col = 2;
-                        break;
-                    case Direction.South:
-                        row = 2;
-                        col = 5;
-                        break;
-                    case Direction.West:
-                        row = 2;
-                        col = 2;
-                        break;
-                    case Direction.East:
-                        row = 1;
-                        col = 5;
-                        break;
-                }
+                    Direction.North => new Point(1, 2),
+                    Direction.South => new Point(2, 5),
+                    Direction.West => new Point(2, 2),
+                    _ => new Point(1, 5),
+                };
 
-                sectionDef = WriteParticipant(sectionDef, row, col, '1');
+                sectionDef = WriteParticipant(sectionDef, pos, GetPlaceholder(data.Left));
             }
 
             if (data.Right != null)
             {
-                int row = 0;
-                int col = 0;
-                switch (_direction)
+                Point pos = _direction switch
                 {
-                    case Direction.North:
-                        row = 2;
-                        col = 4;
-                        break;
-                    case Direction.South:
-                        row = 1;
-                        col = 2;
-                        break;
-                    case Direction.West:
-                        row = 1;
-                        col = 2;
-                        break;
-                    case Direction.East:
-                        row = 2;
-                        col = 2;
-                        break;
-                }
-                sectionDef = WriteParticipant(sectionDef, row, col, '2');
+                    Direction.North => new Point(2, 4),
+                    Direction.South => new Point(1, 2),
+                    Direction.West => new Point(1, 2),
+                    _ => new Point(2, 2),
+                };
+
+                sectionDef = WriteParticipant(sectionDef, pos, GetPlaceholder(data.Right));
             }
 
             return sectionDef;
+        }
+
+        private static char GetPlaceholder(IParticipant p)
+        {
+            if(!_participants.Contains(p))
+            {
+                _participants.Add(p);
+            }
+
+            int placholder = _participants.IndexOf(p) + 1;
+            return placholder.ToString()[0];
         }
 
         /// <summary>
         /// Writes a <see cref="IParticipant"/> on a specific point in the <see cref="Section"/> definition.
         /// </summary>
         /// <param name="sectionDef">The <see cref="Section"/> definition</param>
-        /// <param name="row">The row(x) of the point</param>
-        /// <param name="col">The column(y) of the point</param>
+        /// <param name="pos">The row(x) and the column(y) of the position</param>
         /// <param name="p">The character that will represent the <see cref="IParticipant"/></param>
         /// <returns>The <see cref="Section"/> definition with the <see cref="IParticipant"/>(s)</returns>
-        private static string[] WriteParticipant(string[] sectionDef, int row, int col, char p)
+        private static string[] WriteParticipant(string[] sectionDef, Point pos, char p)
         {
-            string[] newDef = new string[sectionDef.Length];
-            for (int i = 0; i < newDef.Length; i++)
-            {
-                newDef[i] = sectionDef[i];
-            }
-            
-            string defRow = newDef[row];
+            string[] newDefinition = new string[sectionDef.Length];
+            sectionDef.CopyTo(newDefinition, 0);
 
-            StringBuilder stringBuilder = new StringBuilder();
+            StringBuilder defBuilder = new StringBuilder(newDefinition[pos.X]);
+            defBuilder[pos.Y] = p; //replace with placeholder of Participant.
+            newDefinition[pos.X] = defBuilder.ToString();
 
-            bool done = false;
-            for (int i = 0; i < defRow.Length; i++)
-            {
-                char c = defRow[i];
-                    
-                if (i == col && !done)
-                {
-                    done = true;
-                    stringBuilder.Append(p);
-                }
-                else
-                {
-                    stringBuilder.Append(c);
-                }
-            }
-
-            string s = stringBuilder.ToString();
-
-            newDef[row] = s;
-
-            return newDef;
-
+            return newDefinition;
         }
 
         /// <summary>

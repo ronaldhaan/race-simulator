@@ -1,10 +1,12 @@
 ﻿using RaceSimulator.Library.Core;
 using RaceSimulator.Library.Core.Enumerations;
+using RaceSimulator.Library.Core.Events;
 using RaceSimulator.Library.Core.Interfaces;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Timers;
 
@@ -14,9 +16,11 @@ namespace RaceSimulator.Library.Controller
     {
         private Dictionary<Section, SectionData> _positions;
         private readonly Random _random;
-        private Timer _timer;
+        private readonly Timer _timer;
+        private const int MAX_ROUNDS = 1;// 3;
 
         public event EventHandler<ParticipantsChangedEventArgs> ParticipantsChanged;
+        public event EventHandler<RaceEndedEventArgs> RaceEnded;
 
         public List<IParticipant> Participants { get; set; }
         
@@ -29,14 +33,17 @@ namespace RaceSimulator.Library.Controller
         public Race(Track track, List<IParticipant> participants)
         {
             _random = new Random(DateTime.Now.Millisecond);
-            _timer = new Timer(500);
-            _timer.Enabled = true;
-            _timer.Elapsed += OnTimedEvent;
+            _timer = new Timer(500)
+            {
+                Enabled = true
+            };
 
             Participants = participants;
             Positions = new Dictionary<Section, SectionData>();
             StartTime = DateTime.UtcNow;
             Track = track;
+
+            _timer.Elapsed += OnTimedEvent;
 
             PlaceParticipants();
             RandomizeEquipment();
@@ -67,16 +74,28 @@ namespace RaceSimulator.Library.Controller
         /// </summary>
         public void PlaceParticipants()
         {
+            Stack<SectionData> sectionDatas = new Stack<SectionData>();
             foreach(Section section in Track.Sections)
             {
                 SectionData sd = new SectionData(null, 0, null, 0);
 
+                sectionDatas.Push(sd);
                 if (section.SectionType == SectionTypes.StartGrid)
                 {
-                    sd.Left = Participants[0];
-                    sd.DistanceLeft = 2;
-                    sd.Right = Participants[1];
-                    sd.DistanceRight = 1;
+                    for(int i = Participants.Count-1; i >= 0; i-=2)
+                    {
+                        SectionData s = sectionDatas.Pop();
+
+                        s.Left = Participants[i];
+                        try
+                        {
+                            s.Right = Participants[i - 1];
+                        }
+                        catch(Exception)
+                        {
+
+                        }
+                    }
                 }
 
                 Positions.Add(section, sd);
@@ -89,8 +108,9 @@ namespace RaceSimulator.Library.Controller
             {
                 if (p.Equipment != null)
                 {
-                    p.Equipment.Quality = _random.Next(10);
-                    p.Equipment.Performance = _random.Next(10);
+                    p.Equipment.Quality = _random.Next(1, 10);
+                    p.Equipment.Performance = _random.Next(1, 10);
+                    p.Points = 0;
                 }
             }
         }
@@ -102,44 +122,102 @@ namespace RaceSimulator.Library.Controller
 
         public void OnTimedEvent(object obj, EventArgs e)
         {
-            var newPositions = new Dictionary<Section, SectionData>();
-
-            SectionData prevSD = Positions.Last().Value;
-            foreach (KeyValuePair<Section, SectionData> keyValue in Positions)
-            {  
-                Section currentSection = keyValue.Key;
-                SectionData currentSD = keyValue.Value;
-
-                if (currentSD.Left != null)
+            if (Positions != null && Positions.Count > 0)
+            {
+                if (IsRaceOver(Participants.ToArray()))
                 {
-                    currentSD.Left.Equipment = CalculateSpeed(currentSD.Left.Equipment);
-                    if (currentSD.Left.Equipment.Speed >= 100)
-                    {
-                        currentSD.Left.Equipment.Speed = 0;
-                        prevSD.Left = currentSD.Left;
-                        currentSD.Left = null;
-                    }
+                    EndRace();
+                    return;
                 }
 
-                if (currentSD.Right != null)
+                var newPositions = new Dictionary<Section, SectionData>();
+
+                SectionData prevSD = Positions.Last().Value;
+
+                foreach (KeyValuePair<Section, SectionData> keyValue in Positions)
                 {
-                    currentSD.Right.Equipment = CalculateSpeed(currentSD.Right.Equipment);
-                    if (currentSD.Right.Equipment.Speed >= 100)
+                    Section currentSection = keyValue.Key;
+                    SectionData currentSD = keyValue.Value;
+
+                    if (currentSD.Left != null)
                     {
-                        currentSD.Right.Equipment.Speed = 0;
-                        prevSD.Right = currentSD.Right;
-                        currentSD.Right = null;
+                        if (ReachedFinish(currentSection, currentSD.Left))
+                        {
+                            currentSD.Left.Points++;
+                            if (IsRaceOver(currentSD.Left))
+                            {
+                                currentSD.Left = null;
+                                prevSD.Left = null;
+                            }
+                        }
+                        else
+                        {
+                            currentSD.Left.Equipment = CalculateSpeed(currentSD.Left.Equipment);
+                            if (currentSD.Left.Equipment.Speed >= 100 && prevSD.Left == null)
+                            {
+                                currentSD.Left.Equipment.Speed = 0;
+                                prevSD.Left = currentSD.Left;
+                                currentSD.Left = null;
+                            }
+                        }
                     }
+
+                    if (currentSD.Right != null)
+                    {
+                        if (ReachedFinish(currentSection, currentSD.Right))
+                        {
+                            currentSD.Right.Points++;
+                            if (IsRaceOver(currentSD.Right))
+                            {
+                                currentSD.Right = null;
+                                prevSD.Right = null;
+                            }
+                        }
+                        else
+                        {
+                            currentSD.Right.Equipment = CalculateSpeed(currentSD.Right.Equipment);
+                            if (currentSD.Right.Equipment.Speed >= 100 && prevSD.Right == null)
+                            {
+                                currentSD.Right.Equipment.Speed = 0;
+                                prevSD.Right = currentSD.Right;
+                                currentSD.Right = null;
+                            }
+                        }
+                    }
+
+                    newPositions.Add(currentSection, prevSD);
+                    prevSD = currentSD;
                 }
 
-                newPositions.Add(currentSection, prevSD);
-                prevSD = currentSD;
+                Positions = newPositions;
+
+                ParticipantsChanged?.Invoke(this, new ParticipantsChangedEventArgs() { Track = Track });
+            }
+        }
+
+        private bool IsRaceOver(params IParticipant[] participants)
+        {
+            bool isRaceOver = false;
+
+            foreach(var p in participants)
+            {
+                if(p.Points >= MAX_ROUNDS)
+                {
+                    isRaceOver = true;
+                }
+                else
+                {
+                    isRaceOver = false;
+                    break;
+                }
             }
 
-            Positions = newPositions;
+            return isRaceOver;
+        }
 
-            ParticipantsChanged(this, new ParticipantsChangedEventArgs() { Track = Track });
-
+        private bool ReachedFinish(Section section, IParticipant p)
+        {
+            return section.SectionType == SectionTypes.Finish && p != null;
         }
 
 
@@ -150,7 +228,18 @@ namespace RaceSimulator.Library.Controller
             return e;
         }
 
+        private bool ended = false;
 
+        private void EndRace()
+        {
+            if(!ended)
+            {
+                ended = true;
+                _timer.Stop();
+                ParticipantsChanged = null;
 
+                RaceEnded?.Invoke(this, new RaceEndedEventArgs() { Track = Track });
+            }
+        }
     }
 }
