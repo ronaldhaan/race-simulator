@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30413.136
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RaceSimulator.View.ConsoleApp", "RaceSimulator\RaceSimulator.View.ConsoleApp.csproj", "{41661BD3-2195-48B7-88DD-47974D229A26}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RaceSimulator.View.ConsoleApp", "RaceSimulator.View.ConsoleApp\RaceSimulator.View.ConsoleApp.csproj", "{41661BD3-2195-48B7-88DD-47974D229A26}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RaceSimulator.Library.Core", "RaceSimulator.Library.Core\RaceSimulator.Library.Core.csproj", "{0281F004-957A-4466-B118-F5EFD5C67961}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RaceSimulator.Library.Controller", "RaceSimulator.Library.Utility\RaceSimulator.Library.Controller.csproj", "{A4E9638A-FF44-45EB-80C9-68E42DC7B415}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RaceSimulator.Library.Controller", "RaceSimulator.Library.Controller\RaceSimulator.Library.Controller.csproj", "{A4E9638A-FF44-45EB-80C9-68E42DC7B415}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RaceSimulator.Library.Core.Test", "RaceSimulator.Library.Core.Test\RaceSimulator.Library.Core.Test.csproj", "{3FE4357F-2167-470D-B449-E5173CDB89F3}"
 EndProject
