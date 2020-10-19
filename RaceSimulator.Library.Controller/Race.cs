@@ -144,13 +144,11 @@ namespace RaceSimulator.Library.Controller
                         if (Positions.TryGetValue(currentSection, out SectionData currentSD))
                         {
                             #region left
-                            bool catchUpLeftWasTrue = false;
 
                             if (catchUpSD.Left != null)
                             {
                                 currentSD.Left = catchUpSD.Left;
                                 catchUpSD.Left = null;
-                                catchUpLeftWasTrue = true;
                             }
                             else if (prevSD.Left != null)
                             {
@@ -172,7 +170,6 @@ namespace RaceSimulator.Library.Controller
 
                                 if (ReachedFinish(currentSection, prevSD.Left))// || (catchUpLeftWasTrue && ReachedFinish(currentSection, currentSD.Left)))
                                 {
-                                    catchUpLeftWasTrue = false;
                                     AddPoints(prevSD.Left);
                                     if (IsRaceOverFor(prevSD.Left))
                                     {
@@ -189,12 +186,10 @@ namespace RaceSimulator.Library.Controller
                             #endregion left
 
                             #region right
-                            bool catchUpRightWasTrue = false;
                             if (catchUpSD.Right != null)
                             {
                                 currentSD.Right = catchUpSD.Right;
                                 catchUpSD.Right = null;
-                                catchUpRightWasTrue = true;
                             }
                             else if (prevSD.Right != null)
                             {
@@ -216,7 +211,6 @@ namespace RaceSimulator.Library.Controller
 
                                 if (ReachedFinish(currentSection, prevSD.Right))// || (catchUpRightWasTrue && ReachedFinish(currentSection, currentSD.Right)))
                                 {
-                                    catchUpLeftWasTrue = false;
                                     AddPoints(prevSD.Right);
                                     if (IsRaceOverFor(prevSD.Right))
                                     {
