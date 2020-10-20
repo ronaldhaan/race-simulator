@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using RaceSimulator.Library.Core.Interfaces;
 
 namespace RaceSimulator.Library.Core.Templates
 {
-    public class ParticipantTimesCatchedUp
+    public class ParticipantTimesCatchedUp : ITemplateData
     {
         public string Name { get; set; }
 

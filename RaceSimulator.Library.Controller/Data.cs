@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 using RaceSimulator.Library.Core;
 using RaceSimulator.Library.Core.Enumerations;
@@ -13,7 +14,7 @@ namespace RaceSimulator.Library.Controller
 
         public static Race CurrentRace { get; set; }
 
-        public static event System.EventHandler<RaceFinishedEventArgs> CurrentRaceEnded;
+        public static event EventHandler<RaceFinishedEventArgs> CurrentRaceFinised;
 
         public static void Initialize()
         {
@@ -150,13 +151,17 @@ namespace RaceSimulator.Library.Controller
 
         private static void RaceFinished(object sender, RaceFinishedEventArgs e)
         {
+            AddDataToStorage(e);
+            e.Track = NextRace();
+            CurrentRaceFinised?.Invoke(sender, e);
+            CurrentRace.Start();
+        }
+
+        private static void AddDataToStorage(RaceFinishedEventArgs e)
+        {
             Competition.AddPoints(e.RanglistFinishedRace);
             Competition.AddFinishedTimes(e.ParticipantTimeDatas);
             Competition.AddTimesCatchedUp(e.TimesCatchedUp);
-
-            e.Track = NextRace();
-            CurrentRaceEnded?.Invoke(sender, e);
-            CurrentRace.Start();
         }
     }
 }

@@ -31,7 +31,7 @@ namespace RaceSimulator.Library.Core.Test
         [Test]
         public void GetSectionData_NewSection_ReturnNewSectionData()
         {
-            SectionData expected = new SectionData(null, 0, null, 0);
+            SectionData expected = new SectionData();
             Section section = new Section(SectionTypes.LeftCorner);
 
             SectionData result = _race.GetSectionData(section);

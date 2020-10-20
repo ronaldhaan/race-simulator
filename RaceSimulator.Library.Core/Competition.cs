@@ -23,6 +23,8 @@ namespace RaceSimulator.Library.Core
             Participants = participants;
             Tracks = tracks;
             ParticipantPoints = new RaceData<ParticipantPointsData>();
+            ParticipantTimes = new RaceData<ParticipantTimeData>();
+            ParticipantTimesCatchedUp = new RaceData<ParticipantTimesCatchedUp>();
         }
 
         public Track NextTrack()
@@ -42,14 +44,33 @@ namespace RaceSimulator.Library.Core
             int points = 3;
 
             foreach (IParticipant p in ranglist)
-            {
-                if (points > 0)
+            {       
+                ParticipantPointsData data = ParticipantPoints.FindByName(p.Name);
+                if (data != null)
                 {
-                    p.Points += points--;
+                    if (points > 0)
+                    {
+                        p.Points += points;
+                        data.AddPoints(points);
+                    }
+                }
+                else
+                {
+                    if (points > 0)
+                    {
+                        p.Points += points;
+                    }
+
+                    ParticipantPoints.Add(new ParticipantPointsData(p));
                 }
 
-                ParticipantPoints.Add(new ParticipantPointsData(p));
+                points--;
             }
+
+            ParticipantPoints.Data.Sort(delegate (ParticipantPointsData p1, ParticipantPointsData p2)
+            {
+                return p2.Points.CompareTo(p1.Points);
+            });
         }
 
         public void AddFinishedTimes(List<ParticipantTimeData> ptdatas)

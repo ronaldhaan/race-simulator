@@ -17,6 +17,8 @@ namespace RaceSimulator.Library.Controller
 {
     public class Race
     {
+        private bool ended = false;
+        private const int INTERVAL = 500;
         private Dictionary<Section, SectionData> _positions;
         private readonly Random _random;
         private readonly Timer _timer;
@@ -42,14 +44,15 @@ namespace RaceSimulator.Library.Controller
         public Race(Track track, List<IParticipant> participants)
         {
             _random = new Random(DateTime.Now.Millisecond);
-            _timer = new Timer(500)
+            _timer = new Timer(INTERVAL)
             {
                 Enabled = true
             };
             Rounds = new Dictionary<IParticipant, int>();
             FinishedTimes = new List<ParticipantTimeData>();
+            TimesCatchedUp = new Dictionary<IParticipant, int>();
 
-            Participants = participants;
+             Participants = participants;
             Positions = new Dictionary<Section, SectionData>();
             StartTime = DateTime.UtcNow;
             Track = track;
@@ -60,6 +63,18 @@ namespace RaceSimulator.Library.Controller
             RandomizeEquipment();
         }
 
+        private void FinishRace()
+        {
+            if (!ended)
+            {
+                ended = true;
+                _timer.Stop();
+                ParticipantsMoved = null;
+
+                RaceFinished?.Invoke(this, new RaceFinishedEventArgs(GetRanglist(), FinishedTimes, TimesCatchedUp, Track));
+            }
+        }
+
         public SectionData GetSectionData(Section section)
         {
             if(section == null)
@@ -67,7 +82,7 @@ namespace RaceSimulator.Library.Controller
                 return null;
             }
 
-            SectionData data = new SectionData(null, 0, null, 0);
+            SectionData data = new SectionData();
             if(Positions.TryGetValue(section, out SectionData sectionData))
             {
                 data = sectionData;
@@ -88,23 +103,21 @@ namespace RaceSimulator.Library.Controller
             Stack<SectionData> sectionDatas = new Stack<SectionData>();
             foreach(Section section in Track.Sections)
             {
-                SectionData sd = new SectionData(null, 0, null, 0);
+                SectionData sd = new SectionData();
 
                 sectionDatas.Push(sd);
                 if (section.SectionType == SectionTypes.StartGrid)
                 {
+                    // set the participants on the section behind the startgrid.
                     for(int i = Participants.Count-1; i >= 0; i-=2)
                     {
                         SectionData s = sectionDatas.Pop();
 
                         s.Left = Participants[i];
-                        try
+                        
+                        if (i > 0)
                         {
                             s.Right = Participants[i - 1];
-                        }
-                        catch(Exception)
-                        {
-
                         }
                     }
                 }
@@ -119,8 +132,8 @@ namespace RaceSimulator.Library.Controller
             {
                 if (p.Equipment != null)
                 {
-                    p.Equipment.Quality = _random.Next(1, 10);
-                    p.Equipment.Performance = _random.Next(1, 10);
+                    p.Equipment.Quality = _random.Next(4, 10);
+                    p.Equipment.Performance = _random.Next(4, 10);
                     p.Points = 0;
                 }
             }
@@ -131,9 +144,11 @@ namespace RaceSimulator.Library.Controller
             _timer.Start();
         }
 
-        public void OnTimedEvent(object obj, EventArgs e)
+        private SectionData catchUpSD = new SectionData();
+
+        public void OnTimedEvent(object obj, ElapsedEventArgs e)
         {
-            if (Positions != null && Positions.Count > 0)
+            if (Positions.Count > 0)
             {
                 if (IsRaceOverFor(Participants))
                 {
@@ -143,23 +158,27 @@ namespace RaceSimulator.Library.Controller
 
                 List<Section> sections = new List<Section>(Positions.Keys);
                 Section lastSection = sections[^1];
-                SectionData catchUpSD = new SectionData(null, 0, null, 0);
                 if (Positions.TryGetValue(lastSection, out SectionData prevSD))
                 {
-                    foreach (Section currentSection in sections)
+                    for (int i = 0; i < sections.Count; i++)
                     {
+                        Section currentSection = sections[i];
+                        int nextIndex = i + 1 >= sections.Count ? 0 : i + 1;
+
                         if (Positions.TryGetValue(currentSection, out SectionData currentSD))
                         {
                             //left
-                             ParticipantMoveData moveData = new ParticipantMoveData(currentSection, currentSD.Left, prevSD.Left, catchUpSD.Left);
-                            moveData = MoveParticipantWhenPossible(moveData);
+                            ParticipantMoveData moveData = new ParticipantMoveData(currentSection, sections[nextIndex], currentSD.Left, prevSD.Left, catchUpSD.Left); ;
+                            moveData = MoveParticipantWhenPossible(moveData, e);
                             currentSD.Left = moveData.Current;
                             prevSD.Left = moveData.Previous;
                             catchUpSD.Left = moveData.CatchingUp;
 
                             //right 
-                            moveData = new ParticipantMoveData(currentSection, currentSD.Right, prevSD.Right, catchUpSD.Right);
-                            moveData = MoveParticipantWhenPossible(moveData);
+                            moveData.Current = currentSD.Right;
+                            moveData.Previous = prevSD.Right;
+                            moveData.CatchingUp = catchUpSD.Right;
+                            moveData = MoveParticipantWhenPossible(moveData, e);
                             currentSD.Right = moveData.Current;
                             prevSD.Right = moveData.Previous;
                             catchUpSD.Right = moveData.CatchingUp;
@@ -175,7 +194,7 @@ namespace RaceSimulator.Library.Controller
             }
         }
 
-        private ParticipantMoveData MoveParticipantWhenPossible(ParticipantMoveData moveData)
+        private ParticipantMoveData MoveParticipantWhenPossible(ParticipantMoveData moveData, ElapsedEventArgs e)
         {
             if (moveData.CatchingUp != null)
             {
@@ -192,13 +211,13 @@ namespace RaceSimulator.Library.Controller
                     if (moveData.Current == null)
                     {
                         moveData.Current =  moveData.Previous;
+                        moveData.Previous = null;
                     }
-                    else
+                    else if(moveData.NextSection.SectionType != SectionTypes.Finish)
                     {
                         moveData.CatchingUp = moveData.Previous;
+                        moveData.Previous = null;
                     }
-
-                    moveData.Previous = null;
                 }
 
                 if (ReachedFinish(moveData.CurrentSection, moveData.Previous))
@@ -206,6 +225,12 @@ namespace RaceSimulator.Library.Controller
                     AddRound(moveData.Previous);
                     if (IsRaceOverFor(moveData.Previous))
                     {
+                        ParticipantTimeData time = new ParticipantTimeData(moveData.Previous.Name, GetTime(e.SignalTime));
+                        if (!FinishedTimes.Contains(time))
+                        {
+                            FinishedTimes.Add(time);
+                        }
+
                         if (moveData.Previous == moveData.Current)
                         {
                             moveData.Current = null;
@@ -219,6 +244,24 @@ namespace RaceSimulator.Library.Controller
             return moveData;
         }
 
+        private TimeSpan GetTime(DateTime signalTime)
+        {
+            TimeSpan timespan = DateTimeToTimeSpan(signalTime) - DateTimeToTimeSpan(StartTime);
+            TimeSpan rounded = TimeSpan.FromSeconds(Math.Round(timespan.TotalSeconds, 1));
+
+            return rounded;
+        }
+
+        #region Data Storage
+        private List<IParticipant> GetRanglist()
+        {
+            return new List<IParticipant>(Rounds.Keys);
+        }
+
+        private void AddTimesCatchedUp(IParticipant p) => AddUniqueValue(TimesCatchedUp, p);
+
+        private void AddRound(IParticipant p) => AddUniqueValue(Rounds, p);
+
         private void AddUniqueValue(Dictionary<IParticipant, int> dic, IParticipant p)
         {
             if (!dic.TryAdd(p, 1))
@@ -226,10 +269,21 @@ namespace RaceSimulator.Library.Controller
                 dic[p] += 1;
             }
         }
+        #endregion Data Storage
 
-        private void AddTimesCatchedUp(IParticipant p) => AddUniqueValue(TimesCatchedUp, p);
+        private IParticipant CalculateSpeed(IParticipant p)
+        {
+            IEquipment e = p.Equipment;
 
-        private void AddRound(IParticipant p) => AddUniqueValue(Rounds, p);
+            if (!(e.IsBroken = IsBroken(e)))
+            {
+                e.Speed += e.Quality * e.Performance;
+            }
+
+            p.Equipment = e;
+
+            return p;
+        }
 
         private bool CanParticipantMoveForward(IParticipant p)
         {
@@ -248,27 +302,11 @@ namespace RaceSimulator.Library.Controller
             {
                 if(rounds >= MAX_ROUNDS)
                 {
-                    ParticipantTimeData time = new ParticipantTimeData(p.Name, DateTimeToTimeSpan(DateTime.Now));
-                    if (!FinishedTimes.Contains(time)) 
-                    {
-                        FinishedTimes.Add(time);
-                    }
-
                     return true;
                 }
             }
 
             return false;
-        }
-
-        private TimeSpan DateTimeToTimeSpan(DateTime? ts)
-        {
-            if (ts.HasValue)
-            {
-                return new TimeSpan(0, ts.Value.Hour, ts.Value.Minute, ts.Value.Second, ts.Value.Millisecond);
-            }
-
-            return TimeSpan.Zero;
         }
 
         private bool IsRaceOverFor(List<IParticipant> participants)
@@ -292,47 +330,22 @@ namespace RaceSimulator.Library.Controller
             return section.SectionType == SectionTypes.Finish && p != null;
         }
 
-        private IParticipant CalculateSpeed(IParticipant p)
-        {
-            IEquipment e = p.Equipment;
-
-            if (!(e.IsBroken = IsBroken(e)))
-            {
-                e.Speed += e.Quality * e.Performance;
-            }
-
-            p.Equipment = e;
-
-            return p;
-        }
-
         private bool IsBroken(IEquipment e)
         {
             int random = _random.Next(2, 10);
             double chance = e.Quality * e.Performance * random;
-            bool isBroken = !e.IsBroken && chance < 30;
-            return isBroken;
+
+            return !e.IsBroken && chance < 30;
         }
 
-        private bool ended = false;
-
-        private void FinishRace()
+        private TimeSpan DateTimeToTimeSpan(DateTime? ts)
         {
-            if(!ended)
+            if (ts.HasValue)
             {
-                ended = true;
-                _timer.Stop();
-                ParticipantsMoved = null;
-
-                List<IParticipant> ranglist = GetRanglist();
-
-                RaceFinished?.Invoke(this, new RaceFinishedEventArgs(ranglist, FinishedTimes, TimesCatchedUp, Track));
+                return new TimeSpan(0, ts.Value.Hour, ts.Value.Minute, ts.Value.Second, ts.Value.Millisecond);
             }
-        }
 
-        private List<IParticipant> GetRanglist()
-        {
-            return new List<IParticipant>(Rounds.Keys);
+            return TimeSpan.Zero;
         }
     }
 }

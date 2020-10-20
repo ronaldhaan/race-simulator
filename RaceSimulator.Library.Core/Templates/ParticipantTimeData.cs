@@ -1,8 +1,11 @@
 ﻿using System;
 
+using RaceSimulator.Library.Core.Interfaces;
+
+
 namespace RaceSimulator.Library.Core.Templates
 {
-    public class ParticipantTimeData
+    public class ParticipantTimeData : ITemplateData
     {
         public string Name { get; set; }
 

@@ -6,7 +6,7 @@ using System.Text;
 
 namespace RaceSimulator.Library.Core.Templates
 {
-    public class ParticipantPointsData
+    public class ParticipantPointsData : ITemplateData
     {
         public string Name { get; set; }
         
@@ -18,6 +18,11 @@ namespace RaceSimulator.Library.Core.Templates
         {
             Name = name;
             Points = points;
+        }
+
+        public void AddPoints(int points)
+        {
+            Points += points;
         }
     }
 }

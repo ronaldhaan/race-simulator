@@ -10,15 +10,18 @@ namespace RaceSimulator.Library.Core
     {
         public Section CurrentSection { get; set; }
 
+        public Section NextSection { get; set; }
+
         public IParticipant Current { get; set; }
 
         public IParticipant Previous { get; set; }
 
         public IParticipant CatchingUp { get; set; }
 
-        public ParticipantMoveData(Section currentSection, IParticipant current, IParticipant prev, IParticipant catchUp)
+        public ParticipantMoveData(Section currentSection, Section nextSection, IParticipant current, IParticipant prev, IParticipant catchUp)
         {
             CurrentSection = currentSection;
+            NextSection = nextSection;
             Current = current;
             Previous = prev;
             CatchingUp = catchUp;
