@@ -1,11 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 using RaceSimulator.Library.Core;
 using RaceSimulator.Library.Core.Enumerations;
 using RaceSimulator.Library.Core.Events;
 using RaceSimulator.Library.Core.Interfaces;
-using RaceSimulator.Library.Core.Templates;
 
 namespace RaceSimulator.Library.Controller
 {
@@ -15,7 +13,7 @@ namespace RaceSimulator.Library.Controller
 
         public static Race CurrentRace { get; set; }
 
-        public static event System.EventHandler<RaceEndedEventArgs> CurrentRaceEnded;
+        public static event System.EventHandler<RaceFinishedEventArgs> CurrentRaceEnded;
 
         public static void Initialize()
         {
@@ -139,43 +137,26 @@ namespace RaceSimulator.Library.Controller
             {
                 if (CurrentRace != null)
                 {
-                    CurrentRace.RaceEnded -= RaceEnded;
+                    CurrentRace.RaceFinished -= RaceFinished;
                     CurrentRace = null;
                 }
 
                 CurrentRace = new Race(track, Competition.Participants);
-                CurrentRace.RaceEnded += RaceEnded;
+                CurrentRace.RaceFinished += RaceFinished;
             }
 
             return track;
         }
 
-        private static void RaceEnded(object sender, RaceEndedEventArgs e)
+        private static void RaceFinished(object sender, RaceFinishedEventArgs e)
         {
-            GetRaceData((Race)sender);
+            Competition.AddPoints(e.RanglistFinishedRace);
+            Competition.AddFinishedTimes(e.ParticipantTimeDatas);
+            Competition.AddTimesCatchedUp(e.TimesCatchedUp);
 
             e.Track = NextRace();
             CurrentRaceEnded?.Invoke(sender, e);
             CurrentRace.Start();
-        }
-
-        private static void GetRaceData(Race race)
-        {
-
-            List<IParticipant> participants = new List<IParticipant>(race.Rounds.Keys);
-
-            foreach(IParticipant p in participants)
-            {
-                ParticipantPointsData data = Competition.ParticipantPoints.Find(p.Name);
-                if (data == null)
-                {
-                    Competition.ParticipantPoints.Add(new ParticipantPointsData() { Name = p.Name, Points = p.Points });
-                }
-                else
-                {
-                    data.Points += p.Points;
-                }
-            }
         }
     }
 }

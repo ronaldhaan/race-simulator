@@ -2,9 +2,11 @@
 using RaceSimulator.Library.Core.Enumerations;
 using RaceSimulator.Library.Core.Events;
 using RaceSimulator.Library.Core.Interfaces;
+using RaceSimulator.Library.Core.Templates;
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
@@ -20,14 +22,18 @@ namespace RaceSimulator.Library.Controller
         private readonly Timer _timer;
         private const int MAX_ROUNDS = 3;
 
-        public event EventHandler<ParticipantsChangedEventArgs> ParticipantsChanged;
-        public event EventHandler<RaceEndedEventArgs> RaceEnded;
+        public event EventHandler<ParticipantsChangedEventArgs> ParticipantsMoved;
+        public event EventHandler<RaceFinishedEventArgs> RaceFinished;
 
         public List<IParticipant> Participants { get; set; }
         
         public Dictionary<Section, SectionData> Positions { get => _positions; private set => _positions = value; }
 
         public Dictionary<IParticipant, int> Rounds { get; set; }
+
+        public Dictionary<IParticipant, int> TimesCatchedUp { get; set; }
+
+        public List<ParticipantTimeData> FinishedTimes { get; set; }
 
         public DateTime StartTime { get; set; }
 
@@ -41,6 +47,7 @@ namespace RaceSimulator.Library.Controller
                 Enabled = true
             };
             Rounds = new Dictionary<IParticipant, int>();
+            FinishedTimes = new List<ParticipantTimeData>();
 
             Participants = participants;
             Positions = new Dictionary<Section, SectionData>();
@@ -130,7 +137,7 @@ namespace RaceSimulator.Library.Controller
             {
                 if (IsRaceOverFor(Participants))
                 {
-                    EndRace();
+                    FinishRace();
                     return;
                 }
 
@@ -143,88 +150,19 @@ namespace RaceSimulator.Library.Controller
                     {
                         if (Positions.TryGetValue(currentSection, out SectionData currentSD))
                         {
-                            #region left
+                            //left
+                             ParticipantMoveData moveData = new ParticipantMoveData(currentSection, currentSD.Left, prevSD.Left, catchUpSD.Left);
+                            moveData = MoveParticipantWhenPossible(moveData);
+                            currentSD.Left = moveData.Current;
+                            prevSD.Left = moveData.Previous;
+                            catchUpSD.Left = moveData.CatchingUp;
 
-                            if (catchUpSD.Left != null)
-                            {
-                                currentSD.Left = catchUpSD.Left;
-                                catchUpSD.Left = null;
-                            }
-                            else if (prevSD.Left != null)
-                            {
-                                if (CanParticipantMoveForward(prevSD.Left))
-                                {
-                                    prevSD.Left.Equipment.Speed = 0;
-
-                                    if (currentSD.Left == null)
-                                    {
-                                        currentSD.Left = prevSD.Left;
-                                    }
-                                    else
-                                    {
-                                        catchUpSD.Left = prevSD.Left;
-                                    }
-
-                                    prevSD.Left = null;
-                                }
-
-                                if (ReachedFinish(currentSection, prevSD.Left))// || (catchUpLeftWasTrue && ReachedFinish(currentSection, currentSD.Left)))
-                                {
-                                    AddPoints(prevSD.Left);
-                                    if (IsRaceOverFor(prevSD.Left))
-                                    {
-                                        if(prevSD.Left == currentSD.Left)
-                                        {
-                                            currentSD.Left = null;
-                                        }
-
-                                        prevSD.Left = null;
-                                    }
-                                }
-                            }
-
-                            #endregion left
-
-                            #region right
-                            if (catchUpSD.Right != null)
-                            {
-                                currentSD.Right = catchUpSD.Right;
-                                catchUpSD.Right = null;
-                            }
-                            else if (prevSD.Right != null)
-                            {
-                                if (CanParticipantMoveForward(prevSD.Right))
-                                {
-                                    prevSD.Right.Equipment.Speed = 0;
-
-                                    if (currentSD.Right == null)
-                                    {
-                                        currentSD.Right = prevSD.Right;
-                                    }
-                                    else
-                                    {
-                                        catchUpSD.Right = prevSD.Right;
-                                    }
-
-                                    prevSD.Right = null;
-                                }
-
-                                if (ReachedFinish(currentSection, prevSD.Right))// || (catchUpRightWasTrue && ReachedFinish(currentSection, currentSD.Right)))
-                                {
-                                    AddPoints(prevSD.Right);
-                                    if (IsRaceOverFor(prevSD.Right))
-                                    {
-                                        if (prevSD.Right == currentSD.Right)
-                                        {
-                                            currentSD.Right = null;
-                                        }
-
-                                        prevSD.Right = null;
-                                    }
-                                }
-                            }
-
-                            #endregion right
+                            //right 
+                            moveData = new ParticipantMoveData(currentSection, currentSD.Right, prevSD.Right, catchUpSD.Right);
+                            moveData = MoveParticipantWhenPossible(moveData);
+                            currentSD.Right = moveData.Current;
+                            prevSD.Right = moveData.Previous;
+                            catchUpSD.Right = moveData.CatchingUp;
 
                             Positions[currentSection] = currentSD;
                             prevSD = currentSD;
@@ -232,21 +170,66 @@ namespace RaceSimulator.Library.Controller
 
                     }
 
-                    ParticipantsChanged?.Invoke(this, new ParticipantsChangedEventArgs() { Track = Track });
+                    ParticipantsMoved?.Invoke(this, new ParticipantsChangedEventArgs(Track));
                 }
             }
         }
 
-        private void AddPoints(IParticipant p)
+        private ParticipantMoveData MoveParticipantWhenPossible(ParticipantMoveData moveData)
         {
-            p.Points += Rounds.Count == 0 ? 2 : 1;
-
-            if (!Rounds.TryAdd(p, 1))
+            if (moveData.CatchingUp != null)
             {
-                Rounds[p] += 1;
+                moveData.Current = moveData.CatchingUp;
+                AddTimesCatchedUp(moveData.CatchingUp);
+                moveData.CatchingUp = null;
+            }
+            else if (moveData.Previous != null)
+            {
+                if (CanParticipantMoveForward(moveData.Previous))
+                {
+                    moveData.Previous.Equipment.Speed = 0;
+
+                    if (moveData.Current == null)
+                    {
+                        moveData.Current =  moveData.Previous;
+                    }
+                    else
+                    {
+                        moveData.CatchingUp = moveData.Previous;
+                    }
+
+                    moveData.Previous = null;
+                }
+
+                if (ReachedFinish(moveData.CurrentSection, moveData.Previous))
+                {
+                    AddRound(moveData.Previous);
+                    if (IsRaceOverFor(moveData.Previous))
+                    {
+                        if (moveData.Previous == moveData.Current)
+                        {
+                            moveData.Current = null;
+                        }
+
+                        moveData.Previous = null;
+                    }
+                }
             }
 
+            return moveData;
         }
+
+        private void AddUniqueValue(Dictionary<IParticipant, int> dic, IParticipant p)
+        {
+            if (!dic.TryAdd(p, 1))
+            {
+                dic[p] += 1;
+            }
+        }
+
+        private void AddTimesCatchedUp(IParticipant p) => AddUniqueValue(TimesCatchedUp, p);
+
+        private void AddRound(IParticipant p) => AddUniqueValue(Rounds, p);
 
         private bool CanParticipantMoveForward(IParticipant p)
         {
@@ -265,11 +248,27 @@ namespace RaceSimulator.Library.Controller
             {
                 if(rounds >= MAX_ROUNDS)
                 {
+                    ParticipantTimeData time = new ParticipantTimeData(p.Name, DateTimeToTimeSpan(DateTime.Now));
+                    if (!FinishedTimes.Contains(time)) 
+                    {
+                        FinishedTimes.Add(time);
+                    }
+
                     return true;
                 }
             }
 
             return false;
+        }
+
+        private TimeSpan DateTimeToTimeSpan(DateTime? ts)
+        {
+            if (ts.HasValue)
+            {
+                return new TimeSpan(0, ts.Value.Hour, ts.Value.Minute, ts.Value.Second, ts.Value.Millisecond);
+            }
+
+            return TimeSpan.Zero;
         }
 
         private bool IsRaceOverFor(List<IParticipant> participants)
@@ -317,18 +316,23 @@ namespace RaceSimulator.Library.Controller
 
         private bool ended = false;
 
-        private void EndRace()
+        private void FinishRace()
         {
             if(!ended)
             {
                 ended = true;
                 _timer.Stop();
-                ParticipantsChanged = null;
+                ParticipantsMoved = null;
 
+                List<IParticipant> ranglist = GetRanglist();
 
-
-                RaceEnded?.Invoke(this, new RaceEndedEventArgs() { Track = Track });
+                RaceFinished?.Invoke(this, new RaceFinishedEventArgs(ranglist, FinishedTimes, TimesCatchedUp, Track));
             }
+        }
+
+        private List<IParticipant> GetRanglist()
+        {
+            return new List<IParticipant>(Rounds.Keys);
         }
     }
 }

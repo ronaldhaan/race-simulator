@@ -40,12 +40,12 @@ namespace RaceSimulator.View.ConsoleApp
                 Console.WriteLine($"Hello World! Welcome to: '{track.Name}'");
                 //ConsoleRaceBuilder.DrawTrack(track);
 
-                Data.CurrentRace.ParticipantsChanged += ConsoleRaceBuilder.RedrawTrack;
+                Data.CurrentRace.ParticipantsMoved += ConsoleRaceBuilder.RedrawTrack;
             }
            
         }
 
-        private static void Data_CurrentRaceEnded(object sender, RaceEndedEventArgs e)
+        private static void Data_CurrentRaceEnded(object sender, RaceFinishedEventArgs e)
         {
             Start(e.Track);
         }
