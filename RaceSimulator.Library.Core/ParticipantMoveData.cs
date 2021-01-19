@@ -26,5 +26,12 @@ namespace RaceSimulator.Library.Core
             Previous = prev;
             CatchingUp = catchUp;
         }
+
+        public void ChangeParticipants(IParticipant current, IParticipant prev, IParticipant catchup)
+        {
+            Current = current;
+            Previous = prev;
+            CatchingUp = catchup;
+        }
     }
 }

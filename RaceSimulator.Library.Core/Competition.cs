@@ -2,7 +2,9 @@
 using RaceSimulator.Library.Core.Interfaces;
 using RaceSimulator.Library.Core.Templates;
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RaceSimulator.Library.Core
 {
@@ -12,83 +14,63 @@ namespace RaceSimulator.Library.Core
 
         public Queue<Track> Tracks { get; set; }
 
-        public RaceData<ParticipantPointsData> ParticipantPoints { get; set; }
-
-        public RaceData<ParticipantTimeData> ParticipantTimes { get; set; }
-
-        public RaceData<ParticipantTimesCatchedUp> ParticipantTimesCatchedUp { get; set; }
+        public List<TrackRaceData> RaceDataPerTrack { get; set; }
 
         public Competition(List<IParticipant> participants, Queue<Track> tracks)
         {
             Participants = participants;
             Tracks = tracks;
-            ParticipantPoints = new RaceData<ParticipantPointsData>();
-            ParticipantTimes = new RaceData<ParticipantTimeData>();
-            ParticipantTimesCatchedUp = new RaceData<ParticipantTimesCatchedUp>();
+            RaceDataPerTrack = new List<TrackRaceData>();
         }
 
         public Track NextTrack()
         {
             Track track = null;
 
-            if(Tracks.Count > 0)
+            if (Tracks.Count > 0)
             {
                 track = Tracks?.Dequeue();
             }
 
             return track;
+
         }
 
-        public void AddPoints(List<IParticipant> ranglist)
+        public void AddData(RaceFinishedEventArgs e)
         {
-            int points = 3;
-
-            foreach (IParticipant p in ranglist)
-            {       
-                ParticipantPointsData data = ParticipantPoints.FindByName(p.Name);
-                if (data != null)
-                {
-                    if (points > 0)
-                    {
-                        p.Points += points;
-                        data.AddPoints(points);
-                    }
-                }
-                else
-                {
-                    if (points > 0)
-                    {
-                        p.Points += points;
-                    }
-
-                    ParticipantPoints.Add(new ParticipantPointsData(p));
-                }
-
-                points--;
-            }
-
-            ParticipantPoints.Data.Sort(delegate (ParticipantPointsData p1, ParticipantPointsData p2)
+            var raceData = new TrackRaceData
             {
-                return p2.Points.CompareTo(p1.Points);
-            });
+                TrackName = e.Track.Name,
+                ParticipantPointsData = e.RanglistFinishedRace,
+                ParticipantTimePerSectionData = e.ParticipantTimePerSectionDatas,
+                ParticipantTimesCatchedUp = e.TimesCatchedUp,
+                ParticipantTimeData = e.ParticpantTimeData
+            };
+
+
+            SetPoints(ref raceData);
+
+            if (!RaceDataPerTrack.Contains(raceData))
+            {
+                RaceDataPerTrack.Add(raceData);
+            }
         }
 
-        public void AddFinishedTimes(List<ParticipantTimeData> ptdatas)
+        public void SetPoints(ref TrackRaceData raceData)
         {
-            foreach(ParticipantTimeData ptdata in ptdatas)
-                ParticipantTimes.Add(ptdata);
-        }
+            var participants = new List<IParticipant>(Participants);
+            participants.Sort(new ParticipantComparer(raceData));
 
-        public void AddTimesCatchedUp(Dictionary<IParticipant, int> dic)
-        {
-            List<IParticipant> participants = new List<IParticipant>(dic.Keys);
+            int points = 2;
 
             foreach(var p in participants)
             {
-                if(dic.TryGetValue(p, out int times))
-                {
-                    ParticipantTimesCatchedUp.Add(new ParticipantTimesCatchedUp(p.Name, times));
-                }
+                var pData = raceData.ParticipantPointsData.FindByName(p.Name);
+
+                for(int i = 0; i < points; i++)
+                    raceData.ParticipantPointsData.Add(pData);
+
+                points--;
             }
         }
     }

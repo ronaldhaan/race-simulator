@@ -1,17 +1,25 @@
 ﻿using RaceSimulator.Library.Controller;
 using RaceSimulator.Library.Core;
 using RaceSimulator.Library.Core.Events;
+using RaceSimulator.Library.Core.Interfaces;
 using RaceSimulator.Library.Core.Templates;
 
 using System;
+using System.Collections.Generic;
+using System.Data;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
 
 namespace RaceSimulator.View.ConsoleApp
 {
     class Program
     {
+        private static List<string> tracknames;
+
         static void Main(string[] args = null)
         {
+            tracknames = new List<string>();
             Data.Initialize();
             Track track = Data.NextRace();
             Data.CurrentRaceFinised += RaceFinished;
@@ -25,10 +33,9 @@ namespace RaceSimulator.View.ConsoleApp
             Console.Clear();
             if(track == null)
             {
-                DisplayData();
+                DrawTable();
                 Console.WriteLine("Races are over! Start over? y/n");
-                string s = Console.ReadLine();
-                if(s.ToUpper() == "Y")
+                if(Console.ReadLine().ToUpper() == "Y")
                 {
                     Main();
                 }
@@ -37,8 +44,9 @@ namespace RaceSimulator.View.ConsoleApp
                     Environment.Exit(0);
                 }
             }
-            else 
+            else
             {
+                tracknames.Add(track.Name);
                 Console.WriteLine($"Hello World! Welcome to: '{track.Name}'");
                 //ConsoleRaceBuilder.DrawTrack(track);
 
@@ -47,29 +55,15 @@ namespace RaceSimulator.View.ConsoleApp
            
         }
 
-        private static void DisplayData()
-        {
-            string[] columns = { "Name", "Points", "Finished", "Times catched up" };
-            Console.WriteLine("Participant Ranglist:");
-
-            ConsoleTable table = new ConsoleTable();
-            table.PrintLine();
-            table.PrintRow(columns);
-
-            foreach (var data in Data.Competition.ParticipantPoints.Data)
-            {
-                ParticipantTimeData timeData = Data.Competition.ParticipantTimes.FindByName(data.Name);
-                ParticipantTimesCatchedUp catchedUpData = Data.Competition.ParticipantTimesCatchedUp.FindByName(data.Name);
-                int index = Data.Competition.Participants.FindIndex(p => p.Name == data.Name) + 1;
-                table.PrintRow(new string[] { $"{index}: {data.Name}", data.Points.ToString(), $"{timeData.TimeSpan:hh\\:mm\\:ss\\.f}ms", catchedUpData.TimesCatchedUp.ToString() });
-            }
-
-            table.PrintLine();
-        }
-
         private static void RaceFinished(object sender, RaceFinishedEventArgs e)
         {
             Start(e.Track);
+        }
+
+        public static void DrawTable()
+        {
+            ConsoleTable table = new ConsoleTable(tracknames);
+            table.Draw();            
         }
     }
 }

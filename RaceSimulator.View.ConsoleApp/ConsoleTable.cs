@@ -1,17 +1,17 @@
-﻿using System;
+﻿using RaceSimulator.Library.Controller;
+
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace RaceSimulator.View.ConsoleApp
 {
-    public class ConsoleTable
+    public class ConsoleTable : DataTable
     {
-        private const int DEFAULT_TABLE_WIDTH = 73;
-        private int tableWidth;
 
-        public ConsoleTable(int tableWidth = DEFAULT_TABLE_WIDTH)
+        public ConsoleTable(List<string> list, int tableWidth = DEFAULT_TABLE_WIDTH) : base(list, tableWidth) 
         {
-            this.tableWidth = tableWidth;
+            columns = new List<string> { "Name", "Points", "Finished", "Times catched up" };
         }
 
         public void PrintLine()
@@ -19,12 +19,11 @@ namespace RaceSimulator.View.ConsoleApp
             Console.WriteLine(new string('-', tableWidth));
         }
 
-        public void PrintRow(params string[] columns)
+        public override void CreateRow(params string[] cells)
         {
-            int width = (tableWidth - columns.Length) / columns.Length;
             string row = "|";
-
-            foreach (string column in columns)
+            int width = (tableWidth - cells.Length) / cells.Length;
+            foreach (string column in cells)
             {
                 row += AlignCentre(column, width) + "|";
             }
@@ -32,18 +31,14 @@ namespace RaceSimulator.View.ConsoleApp
             Console.WriteLine(row);
         }
 
-        public string AlignCentre(string text, int width)
+        protected override void DrawTable(string title, List<List<string>> rows)
         {
-            text = text.Length > width ? text.Substring(0, width - 3) + "..." : text;
+            Console.WriteLine(title);
+            PrintLine();
+            base.DrawTable(title, rows);
+            PrintLine();
 
-            if (string.IsNullOrEmpty(text))
-            {
-                return new string(' ', width);
-            }
-            else
-            {
-                return text.PadRight(width - (width - text.Length) / 2).PadLeft(width);
-            }
+            Console.WriteLine();
         }
     }
 }

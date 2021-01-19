@@ -9,17 +9,18 @@ namespace RaceSimulator.Library.Core.Events
 {
     public class RaceFinishedEventArgs : TrackEventArgs
     {
-        public List<IParticipant> RanglistFinishedRace { get; set; }
+        public RaceData<ParticipantPointsData> RanglistFinishedRace { get; set; }
 
-        public Dictionary<IParticipant, int> TimesCatchedUp { get; set; }
+        public RaceData<ParticipantTimesCatchedUp> TimesCatchedUp { get; set; }
 
-        public List<ParticipantTimeData> ParticipantTimeDatas { get; set; }
+        public RaceData<ParticipantTimePerSectionData> ParticipantTimePerSectionDatas { get; set; }
+        public RaceData<ParticipantTimeData> ParticpantTimeData { get; set; }
 
-
-        public RaceFinishedEventArgs(List<IParticipant> ranglist, List<ParticipantTimeData> time, Dictionary<IParticipant, int> timesCatchedUp, Track t) : base(t)
+        public RaceFinishedEventArgs(RaceData<ParticipantTimeData> ptimeData, RaceData<ParticipantPointsData> ranglist, RaceData<ParticipantTimePerSectionData> time, RaceData<ParticipantTimesCatchedUp> timesCatchedUp, Track t) : base(t)
         {
+            ParticpantTimeData = ptimeData;
             RanglistFinishedRace = ranglist;
-            ParticipantTimeDatas = time;
+            ParticipantTimePerSectionDatas = time;
             TimesCatchedUp = timesCatchedUp;
         }
     }
